@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 
 ###############################################################################
 # Program : wah_extract_local.py
@@ -26,7 +26,7 @@ if __name__ == "__main__":
 	parser=argparse.ArgumentParser('Batch Extract Script:')
 	in_dir_help='Input directory e.g. /gpfs/projects/cpdn/storage/boinc/upload/batch_440/successful/'
 	parser.add_argument('-i','--in_dir',required=True,help=in_dir_help)
-	out_dir_help='Base of output directory for extracted files(subdirectories for batch will be created)'
+	out_dir_help='Base of output directory for extracted files'
 	parser.add_argument('-o','--out_dir',required=True,help=out_dir_help)
 	
 	fields_help='List of fields to extract: fields has the format:'

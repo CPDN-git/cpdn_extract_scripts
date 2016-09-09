@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 ###############################################################################
 # Program : wah_extract_functions.py
 # Author  : Peter Uhe, based on original scripts by Neil Massey

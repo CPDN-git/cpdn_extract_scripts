@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 
 ###############################################################################
 # Program : wah_extract_local.py
@@ -33,7 +33,7 @@ if __name__ == "__main__":
 	fields_help+='\n      : [file_stream,stash_code,[region],process,valid_min,valid_max,time_freq,cell_method,vert_lev]'
 	fields_help+='\n      : where file_stream = ga.pd|ga.pe|ma.pc'
 	fields_help+='\n      :       stash_code = stash_section*1000 + stash_item'
-	fields_help+='\n      :       [region] = [lon_l,lat_l,lon_r,lat_r]'
+	fields_help+='\n      :       [region] = [lon_NW,lat_NW,lon_SW,lat_SW]'
 	fields_help+='\n      :        process = time post_processing: min|max|mean|sum|all'
 	fields_help+='\n      :        time_freq = input variable data frequency in hours (e.g. 24=daily, 720=monthly)'
 	fields_help+='\n      :        cell_method = input variable time cell method: minimum,maximum,mean'
@@ -66,8 +66,8 @@ if __name__ == "__main__":
 	print 'fields',field_list
 	print 'Number of tasks:',len(taskdirs)
 	
-	# create a temporary directory - do we have permission?
-	temp_dir = tempfile.mkdtemp(dir='/home/'+os.environ['USER'])
+	# create a temporary directory in home directory
+	temp_dir = tempfile.mkdtemp(dir=os.environ['HOME'])
 	try:
 		# Loop over tasks
 		for u in list(taskdirs):
@@ -94,7 +94,7 @@ if __name__ == "__main__":
 					os.remove(fname)
 	except Exception,e:
 		print 'Error extracting netcdf files',e
-		raise
+#		raise
 	finally:
 		# remove the temporary directory
 		shutil.rmtree(temp_dir)

@@ -6,8 +6,10 @@ wah_extract_local.py is for extraction of data on machines that have direct acce
 wah_extract_wget.py is for extraction of data on remote machines by first downloading the zip files off the server
 
 Command line arguments are:
+
 wah_extract_local.py ONLY:
 - -i / --in_dir: input directory containing subfolders for each task (e.g. /gpfs/projects/cpdn/storage/boinc/upload/batch_440/successful/)
+
 wah_extract_wget.py ONLY:
 - -u / --urls_file: File containing list of urls of zip files (in gzipped format)
 

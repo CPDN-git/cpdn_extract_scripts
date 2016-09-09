@@ -19,6 +19,7 @@ BOTH SCRIPTS:
 
 Each field entry has the format:
 -        [file_stream,stash_code,[region],process,valid_min,valid_max,time_freq,cell_method,vert_lev]'
+
 where:
 -        file_stream = ga.pd|ga.pe|ma.pc
 -        stash_code  = stash_section * 1000 + stash_item

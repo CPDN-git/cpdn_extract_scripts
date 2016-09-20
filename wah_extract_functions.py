@@ -308,6 +308,24 @@ def process_data(var_in_data, process, mv, plon, plat, subset_dims, valid_min, v
 
 ###############################################################################
 
+def process_data2(var_in_data, process, mv, plon, plat, subset_dims):
+	# mask array before processing (mask only missing values)
+	var_ma_data = numpy.ma.masked_where((var_in_data == mv) , var_in_data)
+	# do the various processes based on what has been requested
+	if process == "min":
+		out_data = numpy.ma.min(numpy.ma.min(var_ma_data, axis=2), axis=2)
+	elif process == "max":
+		out_data = numpy.ma.max(numpy.ma.max(var_ma_data, axis=2), axis=2)
+	elif process == "mean":
+		out_data = aamean(var_ma_data, plon, plat, subset_dims)
+	elif process == "sum":
+		out_data = numpy.ma.sum(numpy.ma.sum(var_ma_data, axis=2), axis=2)
+	if len(out_data.shape) != len(var_in_data.shape)-1:
+		out_data = out_data.reshape(out_data.shape[0], out_data.shape[1], 1)
+	return out_data
+
+###############################################################################
+
 def get_missing_value(attrs):
 	if "missing_value" in attrs.keys():
 		mv = attrs["missing_value"]
@@ -505,13 +523,16 @@ def process_netcdf(in_ncf,base_path,field):
 			var_out_data = new_data[:,:,:,lon_lat_idxs[0]:lon_lat_idxs[2]] # get the subset data
 		else:		
 			var_out_data = nc_in_var[:,:,lon_lat_idxs[1]:lon_lat_idxs[3], lon_lat_idxs[0]:lon_lat_idxs[2]]
-	
+
+		# Check data is within range
+		mv = get_missing_value(nc_in_var._attributes)
+		masked_data=numpy.ma.masked_where(mv,var_out_data)
+		if not numpy.all(numpy.isfinite(var_out_data)) or numpy.nanmin(masked_data)<v_min or numpy.nanmax(masked_data)>v_max:
+			raise Exception('Data outside valid range ('+str(v_min)+'-'+str(v_max)+') in netcdf file: '+str(numpy.nanmin(masked_data))+','+str(numpy.nanmax(masked_data)))
+
 		# if the data is going to be processed then do the processing here
 		if process != "all":
-			# get the missing value first
-			mv = get_missing_value(nc_in_var._attributes)
-
-			var_out_data = process_data(var_out_data, process, mv, plon, plat, subset_dims, v_min, v_max)
+			var_out_data = process_data2(var_out_data, process, mv, plon, plat, subset_dims)
 		
 		for d in out_dims:
 			# create the output dimension and variable

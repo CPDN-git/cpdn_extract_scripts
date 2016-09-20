@@ -84,7 +84,7 @@ if __name__ == "__main__":
 			for field in field_list:
 				netcdfs=all_netcdfs[field[0]] # List of netcdf files for stream in field (e.g. 'ga.pe')
 				if not netcdfs:
-						print 'Error, no files for requested file stream:' field[0]
+						print 'Error, no files for requested file stream:',field[0]
 						continue
 				for nc_in_file in netcdfs:
 					out_netcdf=process_netcdf(nc_in_file,base_path,field)

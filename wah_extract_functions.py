@@ -228,7 +228,7 @@ def subset_dimensions(in_dimensions, field, plon, plat):
 			subset_dims.append([d[0], d[1]])
 	# if processing data then need a "pt" dimension
 	if field[3] != "all":
-		out_dims.append(["pt", numpy.array([1.0])])
+		out_dims.append(["pt", numpy.array([1.0],dtype=numpy.float32)])
 	return out_dims, subset_dims, [lon_idx_s, lat_idx_s, lon_idx_e, lat_idx_e], remap_data
 
 ###############################################################################

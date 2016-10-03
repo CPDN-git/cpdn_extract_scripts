@@ -278,9 +278,10 @@ def aamean(var_ma_data, plon, plat, subset_dims):
 		for t in range(0, var_ma_data.shape[0]):
 			for z in range(0, var_ma_data.shape[1]):
 				# only want to use the sum of the weights of the non missing values
-				idx = ~var_ma_data[t,z].mask
+				weights_masked = numpy.ma.masked_where(var_ma_data[t,z].mask,weights)
 				# now calculate the sum of the weights
-				sum_weights = numpy.sum(weights[idx])		
+				sum_weights = weights_masked.sum()
+				# Normalise the means by the sum of weights
 				means[t,z] =  means[t,z] / sum_weights
 	return means
 

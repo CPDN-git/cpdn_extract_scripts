@@ -71,6 +71,9 @@ if __name__ == "__main__":
 	try:
 		# Loop over tasks
 		for u in list(taskdirs):
+			if not os.path.isdir(u):
+				# Assume that each task is in it's own directory
+				continue
 			print u
 			
 			# Extract zip files into temporary directory

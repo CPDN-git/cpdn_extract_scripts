@@ -667,6 +667,9 @@ def extract_local(taskpath, field_list, output_dir, temp_dir,zipstart,zipend):
 
 def extract_url(taskurl, field_list, output_dir, temp_dir,zipstart,zipend):
 	# fetch the url to a temp (zip) file using urllib
+	if taskurl.strip()=='':
+		# blank line, skip
+		return '',False
 	try:
 		boinc=taskurl.split('/')[-1]
 		umid=boinc.split('_')[2]

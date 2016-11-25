@@ -4,7 +4,7 @@
 EXTRACT_SCRIPTS_DIR=/home/cenv0437/cpdn_extract_scripts/
 EXTRACT_DATA_DIR=/gpfs/projects/cpdn/scratch/cenv0437/extracted
 BATCH=442
-# Extact data from the list of URLS
+# Extract data from the batch directory
 $EXTRACT_SCRIPTS_DIR/wah_extract_local.py -i /gpfs/projects/cpdn/storage/boinc/upload/batch_${BATCH}/successful/ \
 -f "\
 ['ma.pc',3236,[],'all',150,400,720,'maximum',''],\

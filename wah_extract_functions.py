@@ -627,7 +627,8 @@ def extract_local(taskpath, field_list, output_dir, temp_dir,zipstart,zipend):
 		return base_path,False
 	try:
 		for i in range(zipstart,zipend+1):
-			url=os.path.join(taskpath,boinc+'_'+str(i)+'.zip')
+			#url=os.path.join(taskpath,boinc+'_'+str(i)+'.zip')
+			url = taskpath+'/'+boinc+'_'+str(i)+'.zip'
 #			print url
 			# check whether this has already been processed # TODO, change this to check each zip rather than folder!
 		
@@ -657,7 +658,7 @@ def extract_local(taskpath, field_list, output_dir, temp_dir,zipstart,zipend):
 		for nc_list in extracted_netcdfs.itervalues():
 			for fname in nc_list:
 				os.remove(fname)
-#		raise
+		raise
 		return base_path,False
 	# Success
 #	print base_path,extracted_netcdfs
@@ -690,7 +691,8 @@ def extract_url(taskurl, field_list, output_dir, temp_dir,zipstart,zipend):
 		return base_path,False
 	try:
 		for i in range(zipstart,zipend+1):
-			url=os.path.join(taskurl,boinc+'_'+str(i)+'.zip')
+			#url=os.path.join(taskurl,boinc+'_'+str(i)+'.zip')
+			url = taskurl+'/'+boinc+'_'+str(i)+'.zip'
 #			print url
 			# check whether this has already been processed # TODO, change this to check each zip rather than folder!
 		
@@ -719,10 +721,14 @@ def extract_url(taskurl, field_list, output_dir, temp_dir,zipstart,zipend):
 				if not found: 
 					os.remove(fname)
 			# Remove downloaded zipfile
-			os.remove(zf_fh.name)
+                        zf.close()
+                        fname=zf_fh.name
+                        zf_fh.close()
+			os.remove(fname)
 	except Exception,e:
 		print "Could not extract url: "
 		print e
+		raise
 		# Clean up extracted files
 		for nc_list in extracted_netcdfs.itervalues():
 			for fname in nc_list:

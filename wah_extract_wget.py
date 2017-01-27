@@ -54,6 +54,7 @@ if __name__ == "__main__":
 	# split the field list up
 	field_list = ast.literal_eval(fields)
 	for field in field_list:
+                print field
 		if len(field) != 9:
 			print "Error! Fields argument not formatted correctly"
 			print field
@@ -69,10 +70,10 @@ if __name__ == "__main__":
 	print 'Number of tasks:',len(taskurls)
 	
 	# create a temporary directory - do we have permission?
-	temp_dir = tempfile.mkdtemp(dir=os.environ['HOME'])
+	temp_dir = tempfile.mkdtemp(dir='C:/Users/Kinfe/CPDN_data/tmp/')
 	try:
 		# Loop over tasks
-		for u in list(taskurls):
+		for u in list(taskurls)[:1]:
 			print u
 			
 			# Extract zip files into temporary directory

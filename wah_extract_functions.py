@@ -13,9 +13,14 @@ import numpy, numpy.ma
 import math
 import gzip
 import glob
-from netcdf_file import netcdf_file
+# Append option requires at least scipy-0.15.0
+from scipy.io.netcdf import netcdf_file
+import netCDF4
+#from netcdf_file import netcdf_file
 from conv_rot_grid import rot2glob, glob2rot
 import string
+from datetime import datetime,timedelta
+import numpy as np
 
 
 #############################################################################
@@ -40,7 +45,12 @@ def um_to_timestamp(um_datecode):
 	try:dec=int(dec_code) #decade is 0 to 9
 	except: dec=ord(dec_code)-ord('a')+10 #decade is a-z
 	year=int(um_datecode[1])
-	mon=mon_map[um_datecode[2:]]
+	try:
+		mon=mon_map[um_datecode[2:]]
+	except:
+		# Assume a datecode ending in '10' is a yearly file
+		if um_datecode[3:]=='10':
+			mon='yr'
 	return str(1800+dec*10+year)+'-'+str(mon).zfill(2)
 
 
@@ -62,6 +72,15 @@ def get_coord_string(coord_list):
 				coord_string += "E" + V[0:] + "_"
 	return coord_string[:-1]
 
+# Take time freq of data in hrs and output human readable
+def time_freq_friendly(time_freq):
+	if int(time_freq)==24:
+		return 'daily'
+	elif int(time_freq) == 720:
+		return 'monthly'
+	else:
+		return str(time_freq)+'hrly'
+
 ###############################################################################
 
 def get_output_field_name(field):
@@ -74,15 +93,10 @@ def get_output_field_name(field):
 	return fname
 	
 def get_output_field_name2(field):
-	time_freq=field[6]
+	time_freq=time_freq_friendly(field[6])
 	cell_method=field[7]
 	fname = 'item'+str(field[1])
-	if int(time_freq)==24:
-		fname += '_daily'
-	elif int(time_freq) == 720:
-		fname += '_monthly'
-	else:
-		fname += '_' + time_freq+'hrly'
+	fname += '_'+time_freq
 #	if cell_method !='mean':
 	fname += '_' + cell_method
 	if field[2] != []:
@@ -91,63 +105,57 @@ def get_output_field_name2(field):
 	if field[3] != 'all':
 		fname += "_" + field[3]
 	return fname
+	
+# Just have item number (and any spatial meaning if necessary)
+def get_output_field_name3(field):
+	time_freq=field[6]
+	cell_method=field[7]
+	fname = 'item'+str(field[1])
+	if field[3] != 'all':
+		fname += "_" + field[3]
+	return fname
 
 ###############################################################################
 
-def make_directories(output_dir, year, boinc, field_list, n_valid,umid):
-	# make the output top directory
-	c_path = output_dir
-	download=False
-	if not os.path.exists(c_path):
-		os.mkdir(c_path)
-	# make the year directory
-	c_path += "/" + year
-	if not os.path.exists(c_path):
-		os.mkdir(c_path)
-	# make the boinc / umid directory
-	c_path += "/" + boinc
-	if not os.path.exists(c_path):
-		os.mkdir(c_path)
-	# finally - make the field directories
-	for field in field_list:
-		# make the file_stream directory (i.e. file_stream for global / regional / regional daily etc.)
-		f_path = c_path + "/" + field[0]
-		if not os.path.exists(f_path):
-			os.mkdir(f_path)
-		# if there is not subsetting or processing of the field then the name is 
-		# just the field name
-		f_path = f_path + "/" + get_output_field_name2(field)
-			
-		if not os.path.exists(f_path):
-			os.mkdir(f_path)
-		if len(glob.glob(f_path+'/'+umid+'*')) != n_valid:
-			download=True
+def get_filename(taskpath, field,output_dir,zipstart,zipend,structure):
+	stream_map={'ma':'atmos','ga':'region','ka':'atmos','ko':'ocean'}
+	# Different components used in file name and path
+	boinc=taskpath.split('/')[-1]
+	umid=boinc.split('_')[2]
+	datecode=boinc.split('_')[3]
+	syear=datecode[:4]
+	smon=datecode[4:6]
+	datestart=datetime(int(syear),int(smon),1)
+	date1 = add_months(datestart,zipstart-1)
+	date2 = add_months(datestart,zipend-1)
+	date_range = str(date1.year)+'-'+str(date1.month)+'_'+str(date2.year)+'-'+str(date2.month)
+	time_freq=time_freq_friendly(field[6])
+	cell_method=field[7]
+	varname = get_output_field_name3(field)
+	model = stream_map[field[0][:2]]		
+	if field[2]!=[]:
+		coord_string = '_'+ get_coord_string(field[2])
+	else:
+		coord_string = ''
 
-	return c_path, download
-	
-def make_directories2(output_dir, field_list, n_zips,umid):
-	# make the output top directory
-	c_path = output_dir
-	download=False
-	if not os.path.exists(c_path):
-		os.makedirs(c_path)
-	# finally - make the field directories
-	for field in field_list:
-		# make the file_stream directory (i.e. file_stream for global / regional / regional daily etc.)
-		f_path = c_path + "/" + field[0]
-		if not os.path.exists(f_path):
-			os.mkdir(f_path)
-		# if there is not subsetting or processing of the field then the name is 
-		# just the field name
-		f_path = f_path + "/" + get_output_field_name2(field)
-			
-		if not os.path.exists(f_path):
-			os.mkdir(f_path)
-		if len(glob.glob(f_path+'/*'+umid+'*')) < n_zips:
-			print f_path+'/*'+umid+'*',len(glob.glob(f_path+'/*'+umid+'*'))
-			download=True
+	# construct file name
+	if structure=='long':
+		fname = os.path.join(output_dir,model+coord_string,time_freq+'_'+cell_method,varname,varname+'_'+umid+'_'+date_range+'.nc')
+		
+	return fname
 
-	return c_path, download
+###############################################################################
+
+def check_files_exist(taskpath, field_list,output_dir,zipstart,zipend,structure):
+
+	# Loop over fields/ variables
+	for field in field_list:
+		# If the file doesn't exist return false
+		fname=get_filename(taskpath,field,output_dir,zipstart,zipend,structure)
+		if not os.path.exists(fname):
+			return False
+	# We got to the end, all files must exist
+	return True
 
 ###############################################################################
 
@@ -185,6 +193,7 @@ def subset_dimensions(in_dimensions, field, plon, plat):
 			else:
 				lon_idx_s = get_idx(rlon_s, d[1])
 				lon_idx_e = get_idx(rlon_e, d[1]) + 1
+				print 'lon i',lon_idx_s,lon_idx_e
 			if lon_idx_s < 0:
 				remap_data = True
 			if lon_idx_e > d[1].shape[0]:
@@ -469,22 +478,20 @@ def select_vars_field(nc_file,field_name,meaning_period,cell_method,vert_lev):
 	else:
 		return varnames
 
-def process_netcdf(in_ncf,base_path,field):
+# main function to read in raw netcdf files and write to single variable files
+def process_netcdf(in_ncf,out_name,field,append):
 
 	try:
-
 		in_ncf_end=os.path.basename(in_ncf)
-		o_field_name = get_output_field_name2(field)
 		umid,datestamp=in_ncf_end[:-3].split(field[0])
-		out_name = base_path + "/" + field[0] + "/" + o_field_name + "/" + o_field_name +"_" + umid + "_" + um_to_timestamp(datestamp)  + ".nc"
-		#print 'in,out netcdf files:',in_ncf,out_name
+
+		out_dir=os.path.dirname(out_name)
+		if not os.path.exists(out_dir):
+			os.makedirs(out_dir)
 	
 		# open as netCDF to a temporary file
 		nc_in_file = netcdf_file(in_ncf,'r')
-		# create the output netCDF file
-		# check whether it exists
-		if os.path.exists(out_name):
-			return out_name
+
 		# get the variable from the input (choose first variable from possible variables)
 		in_vars = select_vars_stash(nc_in_file,field[1],field[6],field[7],field[8])
 		in_vars.sort()
@@ -492,22 +499,20 @@ def process_netcdf(in_ncf,base_path,field):
 		if len(in_vars)>1:
 			print 'Warning, multiple variables found matching request, choosing first variable',in_ncf_end,
 		in_var=in_vars[0]
-		out_var = get_output_field_name2(field)
-
-		nc_out_file = netcdf_file(out_name, "w")
 	
 		nc_in_var = nc_in_file.variables[in_var]
 		in_dimensions = []
 		process = field[3]
 		v_min = field[4]
 		v_max = field[5]
-		# now copy the dimensions from input netcdf
+		
+		# Get the dimensions from input netcdf
 		for d in nc_in_var.dimensions:
 			# get the input dimension and the data
 			dim_in_var = nc_in_file.variables[d]
 			dim_in_data = dim_in_var[:]
 			in_dimensions.append([d, dim_in_data])
-
+		
 		# get the rotated pole definition	
 		plon, plat = get_rotated_pole(nc_in_var._attributes, nc_in_file)
 		# subset the dimensions to create the out_dimensions
@@ -534,108 +539,142 @@ def process_netcdf(in_ncf,base_path,field):
 		# if the data is going to be processed then do the processing here
 		if process != "all":
 			var_out_data = process_data2(var_out_data, process, mv, plon, plat, subset_dims)
-		
-		for d in out_dims:
-			# create the output dimension and variable
-			nc_out_file.createDimension(d[0], d[1].shape[0])
-			dim_out_var = nc_out_file.createVariable(d[0], d[1].dtype, (d[0],))
-			# assign the output variable data and attributes from the input
-			if d[0] in nc_in_file.variables.keys():
-				dim_in_var = nc_in_file.variables[d[0]]
-				dim_out_var._attributes = dim_in_var._attributes
-			elif d[0] == "pt":
-				# if it's the "pt" dimension then create an attribute indicating the domain of the
-				# mean-ed / max-ed / min-ed variable
-				dom_str = ""
-				if field[2] == []:
-					dom_str = "global  "
-				else:
-					for i in range(0, 4):
-						dom_str += str(field[2][i]) + ", "
-				dim_out_var._attributes["domain"] = dom_str[:-2]
-			dim_out_var[:] = d[1][:]
-		
-		# create the variable
-		out_dim_names = [d[0] for d in out_dims]
-		nc_out_var = nc_out_file.createVariable(out_var, var_out_data.dtype, out_dim_names)
-		# assign the attributes
-		nc_out_var._attributes = nc_in_var._attributes
-		# remove the grid mapping and coordinates from the dictionary if they exist and process is not all
-		if process != "all":
-			if "grid_mapping" in nc_out_var._attributes:
-				del nc_out_var._attributes["grid_mapping"]
-			if "coordinates" in nc_out_var._attributes:
-				del nc_out_var._attributes["coordinates"]
-			if "cell_method" in nc_out_var._attributes:
-				nc_out_var._attributes["cell_method"] += ", area: " + process + " "
 			
-		# assign the data
-		nc_out_var[:] = var_out_data
+			
+		# Sort out output file:
+		#
+		out_var = get_output_field_name3(field)
+		# create the output netCDF file if not appending
+		if append:
+			nc_out_file = netCDF4.Dataset(out_name, "a")
+		else:
+			# check whether it exists
+			if os.path.exists(out_name):
+				return False
+
+			# Set up new file
+			nc_out_file = netcdf_file(out_name, "w")
+
+			# create the dimensions
+			for d in out_dims:
+				# create the output dimension and variable
+				if d[0][:4]!='time':
+					dlen=d[1].shape[0]
+				else:
+					dlen=0 # Time has unlimited dimension
+				nc_out_file.createDimension(d[0],dlen)
+				dim_out_var = nc_out_file.createVariable(d[0], d[1].dtype, (d[0],))
+				# assign the output variable data and attributes from the input
+				if d[0] in nc_in_file.variables.keys():
+					dim_in_var = nc_in_file.variables[d[0]]
+					dim_out_var._attributes = dim_in_var._attributes
+				elif d[0] == "pt":
+					# if it's the "pt" dimension then create an attribute indicating the domain of the
+					# mean-ed / max-ed / min-ed variable
+					dom_str = ""
+					if field[2] == []:
+						dom_str = "global  "
+					else:
+						for i in range(0, 4):
+							dom_str += str(field[2][i]) + ", "
+					dim_out_var._attributes["domain"] = dom_str[:-2]
+				dim_out_var[:] = d[1][:]
 	
-		# check for rotated pole and copy variable if it exists
-		if "grid_mapping" in nc_out_var._attributes and len(out_dims) == 4:
-			grid_map_name = nc_out_var._attributes["grid_mapping"]
-			grid_map_var = nc_in_file.variables[grid_map_name]
-			grid_map_out_var = nc_out_file.createVariable(grid_map_name, 'c', ())
-			grid_map_out_var._attributes = grid_map_var._attributes
-			# get the global longitude / global latitude vars
-			coords = (nc_out_var._attributes["coordinates"]).split(" ");
-			global_lon_var = nc_in_file.variables[coords[0]]
-			global_lat_var = nc_in_file.variables[coords[1]]
-			global_lon_data = global_lon_var[lon_lat_idxs[1]:lon_lat_idxs[3], lon_lat_idxs[0]:lon_lat_idxs[2]]
-			global_lat_data = global_lat_var[lon_lat_idxs[1]:lon_lat_idxs[3], lon_lat_idxs[0]:lon_lat_idxs[2]]
-			# create the global latitude / global longitude variables
-			out_global_lon_var = nc_out_file.createVariable(coords[0], global_lon_data.dtype, (out_dims[2][0], out_dims[3][0]))
-			out_global_lon_var[:] = global_lon_data
-			out_global_lat_var = nc_out_file.createVariable(coords[1], global_lat_data.dtype, (out_dims[2][0], out_dims[3][0]))
-			out_global_lat_var[:] = global_lat_data
-			out_global_lon_var._attributes = global_lon_var._attributes
-			out_global_lat_var._attributes = global_lat_var._attributes
+			# create the variable
+			out_dim_names = [d[0] for d in out_dims]
+			nc_out_var = nc_out_file.createVariable(out_var, var_out_data.dtype, out_dim_names)
+			# assign the attributes
+			nc_out_var._attributes = nc_in_var._attributes
+			# remove the grid mapping and coordinates from the dictionary if they exist and process is not all
+			if process != "all":
+				if "grid_mapping" in nc_out_var._attributes:
+					del nc_out_var._attributes["grid_mapping"]
+				if "coordinates" in nc_out_var._attributes:
+					del nc_out_var._attributes["coordinates"]
+				if "cell_method" in nc_out_var._attributes:
+					nc_out_var._attributes["cell_method"] += ", area: " + process + " "
 		
+
+			# check for rotated pole and copy variable if it exists
+			if "grid_mapping" in nc_out_var._attributes and len(out_dims) == 4:
+				grid_map_name = nc_out_var._attributes["grid_mapping"]
+				grid_map_var = nc_in_file.variables[grid_map_name]
+				grid_map_out_var = nc_out_file.createVariable(grid_map_name, 'c', ())
+				grid_map_out_var._attributes = grid_map_var._attributes
+				# get the global longitude / global latitude vars
+				coords = (nc_out_var._attributes["coordinates"]).split(" ");
+				global_lon_var = nc_in_file.variables[coords[0]]
+				global_lat_var = nc_in_file.variables[coords[1]]
+				global_lon_data = global_lon_var[lon_lat_idxs[1]:lon_lat_idxs[3], lon_lat_idxs[0]:lon_lat_idxs[2]]
+				global_lat_data = global_lat_var[lon_lat_idxs[1]:lon_lat_idxs[3], lon_lat_idxs[0]:lon_lat_idxs[2]]
+				# create the global latitude / global longitude variables
+				out_global_lon_var = nc_out_file.createVariable(coords[0], global_lon_data.dtype, (out_dims[2][0], out_dims[3][0]))
+				out_global_lon_var[:] = global_lon_data
+				out_global_lat_var = nc_out_file.createVariable(coords[1], global_lat_data.dtype, (out_dims[2][0], out_dims[3][0]))
+				out_global_lat_var[:] = global_lat_data
+				out_global_lon_var._attributes = global_lon_var._attributes
+				out_global_lat_var._attributes = global_lat_var._attributes
+		
+				# assign the data
+				nc_out_var[:] = var_out_data
+
+		# Append data
+		if append:
+			# find time dimension to append to
+			for var in nc_out_file.variables.keys():
+				if var[:4]=='time':
+					out_time=var
+			
+			for d in out_dims:
+				if d[0][:4]=='time':
+					dim_out_var = nc_out_file.variables[out_time]
+					tlen=len(dim_out_var)
+					dim_out_var[tlen:] = d[1][:]
+
+			nc_out_var = nc_out_file.variables[out_var]
+			nc_out_var[tlen:,:]=var_out_data[:]
+			
 		nc_out_file.close()
 		nc_in_file.close()
 	except Exception,e:
 		print 'Failed to create netcdf file'#,os.path.basename(out_name)
 		print e
-#		raise
+		raise
 		if os.path.exists(out_name):
 			os.remove(out_name)
 		return False
 	return out_name
 
+# Add months to datetime object
+def add_months(date,months):
+	yr = date.year
+	mon = date.month
+	new_month = ((mon-1)+months)%12 +1
+	new_year = yr + ((mon-1)+months)/12
+	newdate = date.replace(year=new_year,month=new_month)
+	return newdate
+
 ###############################################################################
 
-def extract_local(taskpath, field_list, output_dir, temp_dir,zipstart,zipend):
-	# fetch the url to a temp (zip) file using urllib
-	try:
-		boinc=taskpath.split('/')[-1]
-		umid=boinc.split('_')[2]
-		year=boinc.split('_')[3]
-		# make directories to hold the output
-		base_path, download = make_directories2(output_dir, field_list,zipend+1-zipstart,umid)
-		
-		extracted_netcdfs={}
-		for field in field_list:
-			extracted_netcdfs[field[0]]=[]
+def extract_local(taskpath, field_list, output_dir, temp_dir,zipstart,zipend,structure='flat'):
+	boinc=taskpath.split('/')[-1]
+	
+	# Set up dictionary for list of extracted files (by file stream)
+	extracted_netcdfs={}
+	for field in field_list:
+		extracted_netcdfs[field[0]]=[]
 
-		if not download:
-			print 'files already extracted...'
-			return base_path,False
-	except Exception,e:
-		print 'Error before extract',e
-		raise
-		return base_path,False
+	#loop over zipfiles and extract netcdf files
 	try:
 		for i in range(zipstart,zipend+1):
-			url=os.path.join(taskpath,boinc+'_'+str(i)+'.zip')
-#			print url
-			# check whether this has already been processed # TODO, change this to check each zip rather than folder!
-		
-			zf = zipfile.ZipFile(url,'r')
+			path=os.path.join(taskpath,boinc+'_'+str(i)+'.zip')
+			# open and extract contents of zip
+			zf = zipfile.ZipFile(path,'r')
 			zf.extractall(temp_dir)
 
 			# list the zip contents
 			zf_list = zf.namelist()
+			# Loop over files in zip and check if we are going to use them
 			for zf_file in zf_list:
 				found=False
 				fname=temp_dir + "/" + zf_file
@@ -647,47 +686,36 @@ def extract_local(taskpath, field_list, output_dir, temp_dir,zipstart,zipend):
 						if fname not in extracted_netcdfs[file_stream]:
 							extracted_netcdfs[file_stream].append(fname)
 						found=True
-						#zf.extract(zf_file, temp_dir)
-				if not found: 
+				if not found: # We are not using this file
 					os.remove(fname)
 	except Exception,e:
-		print "Could not extract url: " + url
+		print "Could not extract file: " + path
 		print e
 		# Clean up extracted files
 		for nc_list in extracted_netcdfs.itervalues():
 			for fname in nc_list:
 				os.remove(fname)
-#		raise
-		return base_path,False
+		return False
 	# Success
-#	print base_path,extracted_netcdfs
-	return base_path,extracted_netcdfs
+	return extracted_netcdfs
 
 ###############################################################################
 
-def extract_url(taskurl, field_list, output_dir, temp_dir,zipstart,zipend):
-	# fetch the url to a temp (zip) file using urllib
-	if taskurl.strip()=='':
-		# blank line, skip
-		return '',False
-	try:
-		boinc=taskurl.split('/')[-1]
-		umid=boinc.split('_')[2]
-		year=boinc.split('_')[3]
-		# make directories to hold the output
-		base_path, download = make_directories2(output_dir, field_list,zipend+1-zipstart,umid)
+def extract_url(taskurl, field_list, output_dir,temp_dir,zipstart,zipend,structure='flat'):
+	boinc=taskurl.split('/')[-1]
+	
+	# Check if files requested to be produced from this task already exist
+	files_exist = check_files_exist(taskurl, field_list, output_dir,zipstart,zipend,structure=structure)
+	if files_exist:
+		print 'Files already exist, skipping!'
+		return False
 		
-		extracted_netcdfs={}
-		for field in field_list:
-			extracted_netcdfs[field[0]]=[]
+	# Set up dictionary for list of extracted files (by file stream)
+	extracted_netcdfs={}
+	for field in field_list:
+		extracted_netcdfs[field[0]]=[]
 
-		if not download:
-			print 'files already extracted...'
-			return base_path,False
-	except Exception,e:
-		print 'Error before extract',e
-		raise
-		return base_path,False
+	#loop over zipfiles and extract netcdf files
 	try:
 		for i in range(zipstart,zipend+1):
 			url=os.path.join(taskurl,boinc+'_'+str(i)+'.zip')
@@ -704,6 +732,7 @@ def extract_url(taskurl, field_list, output_dir, temp_dir,zipstart,zipend):
 
 			# list the zip contents
 			zf_list = zf.namelist()
+			# Loop over files in zip and check if we are going to use them
 			for zf_file in zf_list:
 				found=False
 				fname=temp_dir + "/" + zf_file
@@ -715,8 +744,7 @@ def extract_url(taskurl, field_list, output_dir, temp_dir,zipstart,zipend):
 						if fname not in extracted_netcdfs[file_stream]:
 							extracted_netcdfs[file_stream].append(fname)
 						found=True
-						#zf.extract(zf_file, temp_dir)
-				if not found: 
+				if not found: # We are not using this file
 					os.remove(fname)
 			# Remove downloaded zipfile
 			os.remove(zf_fh.name)
@@ -728,10 +756,10 @@ def extract_url(taskurl, field_list, output_dir, temp_dir,zipstart,zipend):
 			for fname in nc_list:
 				os.remove(fname)
 #		raise
-		return base_path,False
+		return False
 	# Success
 #	print base_path,extracted_netcdfs
-	return base_path,extracted_netcdfs
+	return extracted_netcdfs
 
 ###############################################################################
 

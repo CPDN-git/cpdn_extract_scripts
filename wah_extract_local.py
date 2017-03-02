@@ -52,8 +52,8 @@ if __name__ == "__main__":
 	start_zip=args.start_zip
 	end_zip=args.end_zip
 	
-	if args.structure!='flat' and args.structure!='year-wu':
-		raise Exception('Error, --structure argument must be either flat or year-wu')
+	if args.structure!='std' and args.structure!='startdate-dir':
+		raise Exception('Error, --structure argument must be either std or startdate-dir')
 		
 	# split the field list up
 	field_list = ast.literal_eval(fields)

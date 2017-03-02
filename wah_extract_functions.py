@@ -13,10 +13,10 @@ import numpy, numpy.ma
 import math
 import gzip
 import glob
-# Append option requires at least scipy-0.15.0
-from scipy.io.netcdf import netcdf_file
-import netCDF4
-#from netcdf_file import netcdf_file
+#from netcdf_file import netcdf_file # Note netcdf_file.py doesn't allow appending
+from scipy.io.netcdf import netcdf_file # Note Append option requires at least scipy-0.15.0
+# import netCDF4  # Note Can use netCDF4 for append option instead 
+
 from conv_rot_grid import rot2glob, glob2rot
 import string
 from datetime import datetime,timedelta
@@ -106,18 +106,20 @@ def get_output_field_name2(field):
 		fname += "_" + field[3]
 	return fname
 	
-# Just have item number (and any spatial meaning if necessary)
+# Just have item number time freq and meaning (and any spatial meaning if necessary)
 def get_output_field_name3(field):
-	time_freq=field[6]
+	time_freq=time_freq_friendly(field[6])
 	cell_method=field[7]
 	fname = 'item'+str(field[1])
+	fname += '_'+time_freq
+	fname += '_' + cell_method
 	if field[3] != 'all':
 		fname += "_" + field[3]
 	return fname
 
 ###############################################################################
 
-def get_filename(taskpath, field,output_dir,zipstart,zipend,structure):
+def get_filename(taskpath, field,output_dir,zipstart,zipend,structure='std'):
 	stream_map={'ma':'atmos','ga':'region','ka':'atmos','ko':'ocean'}
 	# Different components used in file name and path
 	boinc=taskpath.split('/')[-1]
@@ -139,8 +141,10 @@ def get_filename(taskpath, field,output_dir,zipstart,zipend,structure):
 		coord_string = ''
 
 	# construct file name
-	if structure=='long':
-		fname = os.path.join(output_dir,model+coord_string,time_freq+'_'+cell_method,varname,varname+'_'+umid+'_'+date_range+'.nc')
+	if structure=='std':
+		fname = os.path.join(output_dir,model+coord_string,varname,varname+'_'+umid+'_'+date_range+'.nc')
+	elif structure=='startdate-dir':
+		fname = os.path.join(output_dir,model+coord_string,varname,datecode,varname+'_'+umid+'_'+date_range+'.nc')
 		
 	return fname
 
@@ -546,7 +550,8 @@ def process_netcdf(in_ncf,out_name,field,append):
 		out_var = get_output_field_name3(field)
 		# create the output netCDF file if not appending
 		if append:
-			nc_out_file = netCDF4.Dataset(out_name, "a")
+#			nc_out_file = netCDF4.Dataset(out_name, "a") # Can use netCDF4 alternatively
+			nc_out_file = netcdf_file(out_name, "a")
 		else:
 			# check whether it exists
 			if os.path.exists(out_name):
@@ -639,7 +644,7 @@ def process_netcdf(in_ncf,out_name,field,append):
 	except Exception,e:
 		print 'Failed to create netcdf file'#,os.path.basename(out_name)
 		print e
-		raise
+		#raise
 		if os.path.exists(out_name):
 			os.remove(out_name)
 		return False
@@ -656,7 +661,7 @@ def add_months(date,months):
 
 ###############################################################################
 
-def extract_local(taskpath, field_list, output_dir, temp_dir,zipstart,zipend,structure='flat'):
+def extract_local(taskpath, field_list, output_dir, temp_dir,zipstart,zipend,structure='std'):
 	boinc=taskpath.split('/')[-1]
 	
 	# Set up dictionary for list of extracted files (by file stream)
@@ -701,7 +706,7 @@ def extract_local(taskpath, field_list, output_dir, temp_dir,zipstart,zipend,str
 
 ###############################################################################
 
-def extract_url(taskurl, field_list, output_dir,temp_dir,zipstart,zipend,structure='flat'):
+def extract_url(taskurl, field_list, output_dir,temp_dir,zipstart,zipend,structure='std'):
 	boinc=taskurl.split('/')[-1]
 	
 	# Check if files requested to be produced from this task already exist

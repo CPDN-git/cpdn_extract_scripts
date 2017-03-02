@@ -62,8 +62,8 @@ if __name__ == "__main__":
 			print fields_help
 			exit()
 			
-	if args.structure!='flat' and args.structure!='year-wu' and args.structure!='long':
-		raise Exception('Error, --structure argument must be either flat or year-wu')
+	if args.structure!='std' and args.structure!='startdate-dir':
+		raise Exception('Error, --structure argument must be either std or startdate-dir')
 	
 	# Get list of urls of zips to extract
 	urls = read_urls(urls_file)

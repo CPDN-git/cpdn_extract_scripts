@@ -622,8 +622,8 @@ def process_netcdf(in_ncf,out_name,field,append):
 				out_global_lon_var.setncatts(global_lon_var.__dict__)
 				out_global_lat_var.setncatts(global_lat_var.__dict__)
 		
-				# assign the data
-				nc_out_var[:] = var_out_data
+			# assign the data
+			nc_out_var[:] = var_out_data
 
 		# Append data
 		if append:

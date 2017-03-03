@@ -488,10 +488,6 @@ def process_netcdf(in_ncf,out_name,field,append):
 	try:
 		in_ncf_end=os.path.basename(in_ncf)
 		umid,datestamp=in_ncf_end[:-3].split(field[0])
-
-		out_dir=os.path.dirname(out_name)
-		if not os.path.exists(out_dir):
-			os.makedirs(out_dir)
 	
 		# open as netCDF to a temporary file
 		nc_in_file = netcdf_file(in_ncf,'r')
@@ -547,6 +543,11 @@ def process_netcdf(in_ncf,out_name,field,append):
 			
 		# Sort out output file:
 		#
+		# First make the directory 
+		out_dir=os.path.dirname(out_name)
+		if not os.path.exists(out_dir):
+			os.makedirs(out_dir)
+		
 		out_var = get_output_field_name3(field)
 		# create the output netCDF file if not appending
 		if append:
@@ -558,7 +559,7 @@ def process_netcdf(in_ncf,out_name,field,append):
 				return False
 
 			# Set up new file
-			nc_out_file = netcdf_file(out_name, "w")
+			nc_out_file = netcdf_file(out_name, "w",format='NETCDF3_CLASSIC')
 
 			nc_out_file.setncatts(nc_in_file.__dict__)
 			# create the dimensions

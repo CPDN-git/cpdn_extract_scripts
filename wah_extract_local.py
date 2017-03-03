@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
 	parser.add_argument('-s','--start_zip',type=int,default=1,help='First zip to extract')
 	parser.add_argument('-e','--end_zip',type=int,default=12,help='Last zip to extract')
-	parser.add_argument('--structure',default='flat',help='Directory structure (after field) [flat|year-wu]')
+	parser.add_argument('--structure',default='std',help='Directory structure [std|startdate-dir]')
 
 	# Get arguments
 	args = parser.parse_args()

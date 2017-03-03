@@ -14,7 +14,7 @@ import tempfile, shutil
 import glob
 import argparse
 
-from wah_extract_functions import extract_local,process_netcdf
+from wah_extract_functions import extract_local,process_netcdf,check_files_exist,get_filename
 
 ###############################################################################
 

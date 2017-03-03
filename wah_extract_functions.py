@@ -14,8 +14,8 @@ import math
 import gzip
 import glob
 #from netcdf_file import netcdf_file # Note netcdf_file.py doesn't allow appending
-from scipy.io.netcdf import netcdf_file # Note Append option requires at least scipy-0.15.0
-# import netCDF4  # Note Can use netCDF4 for append option instead 
+#from scipy.io.netcdf import netcdf_file # Note Append option requires at least scipy-0.15.0
+from netCDF4 import Dataset as netcdf_file  # Note Can use netCDF4 for append option instead 
 
 from conv_rot_grid import rot2glob, glob2rot
 import string
@@ -340,23 +340,23 @@ def process_data2(var_in_data, process, mv, plon, plat, subset_dims):
 
 ###############################################################################
 
-def get_missing_value(attrs):
-	if "missing_value" in attrs.keys():
-		mv = attrs["missing_value"]
-	if "_FillValue" in attrs.keys():
-		mv = attrs["_FillValue"]
+def get_missing_value(nc_in_file):
+	try:
+		mv = getattr(nc_in_file,"missing_value")
+	except:
+		mv = getattr(nc_in_file,"_FillValue")
 	return mv
 
 ###############################################################################
 
-def get_rotated_pole(attrs, nc_in_file):
+def get_rotated_pole(nc_in_file):
 	# get the rotated pole longitude / latitude (for calculating weights)
-	if "grid_mapping" in attrs.keys():
-		grid_map_name = attrs["grid_mapping"]
+	try:
+		grid_map_name = getattr(nc_in_file,"grid_mapping")
 		grid_map_var = nc_in_file.variables[grid_map_name]	
-		plon = grid_map_var._attributes["grid_north_pole_longitude"]
-		plat = grid_map_var._attributes["grid_north_pole_latitude"]
-	else:
+		plon = getattr(grid_map_var,"grid_north_pole_longitude")
+		plat = getattr(grid_map_var,"grid_north_pole_latitude")
+	except:
 		plon = 0.0
 		plat = 90.0
 	return plon, plat
@@ -517,8 +517,8 @@ def process_netcdf(in_ncf,out_name,field,append):
 			dim_in_data = dim_in_var[:]
 			in_dimensions.append([d, dim_in_data])
 		
-		# get the rotated pole definition	
-		plon, plat = get_rotated_pole(nc_in_var._attributes, nc_in_file)
+		# get the rotated pole definition
+		plon, plat = get_rotated_pole(nc_in_file)
 		# subset the dimensions to create the out_dimensions
 		out_dims, subset_dims, lon_lat_idxs, remap_data = subset_dimensions(in_dimensions, field, plon, plat)
 		# if the longitude and latitude indexes are < 0 then we need to remap the data so that 0deg is
@@ -535,7 +535,7 @@ def process_netcdf(in_ncf,out_name,field,append):
 			var_out_data = nc_in_var[:,:,lon_lat_idxs[1]:lon_lat_idxs[3], lon_lat_idxs[0]:lon_lat_idxs[2]]
 
 		# Check data is within range
-		mv = get_missing_value(nc_in_var._attributes)
+		mv = get_missing_value(nc_in_var)
 		masked_data=numpy.ma.masked_where(mv,var_out_data)
 		if not numpy.all(numpy.isfinite(var_out_data)) or numpy.nanmin(masked_data)<v_min or numpy.nanmax(masked_data)>v_max:
 			raise Exception('Data outside valid range ('+str(v_min)+'-'+str(v_max)+') in netcdf file: '+str(numpy.nanmin(masked_data))+','+str(numpy.nanmax(masked_data)))
@@ -560,6 +560,7 @@ def process_netcdf(in_ncf,out_name,field,append):
 			# Set up new file
 			nc_out_file = netcdf_file(out_name, "w")
 
+			nc_out_file.setncatts(nc_in_file.__dict__)
 			# create the dimensions
 			for d in out_dims:
 				# create the output dimension and variable
@@ -572,7 +573,7 @@ def process_netcdf(in_ncf,out_name,field,append):
 				# assign the output variable data and attributes from the input
 				if d[0] in nc_in_file.variables.keys():
 					dim_in_var = nc_in_file.variables[d[0]]
-					dim_out_var._attributes = dim_in_var._attributes
+					dim_out_var.setncatts(dim_in_var.__dict__)
 				elif d[0] == "pt":
 					# if it's the "pt" dimension then create an attribute indicating the domain of the
 					# mean-ed / max-ed / min-ed variable
@@ -582,32 +583,32 @@ def process_netcdf(in_ncf,out_name,field,append):
 					else:
 						for i in range(0, 4):
 							dom_str += str(field[2][i]) + ", "
-					dim_out_var._attributes["domain"] = dom_str[:-2]
+					dim_out_var.domain= dom_str[:-2]
 				dim_out_var[:] = d[1][:]
 	
 			# create the variable
 			out_dim_names = [d[0] for d in out_dims]
 			nc_out_var = nc_out_file.createVariable(out_var, var_out_data.dtype, out_dim_names)
 			# assign the attributes
-			nc_out_var._attributes = nc_in_var._attributes
+			nc_out_var.setncatts(nc_in_var.__dict__)
 			# remove the grid mapping and coordinates from the dictionary if they exist and process is not all
 			if process != "all":
-				if "grid_mapping" in nc_out_var._attributes:
-					del nc_out_var._attributes["grid_mapping"]
-				if "coordinates" in nc_out_var._attributes:
-					del nc_out_var._attributes["coordinates"]
-				if "cell_method" in nc_out_var._attributes:
-					nc_out_var._attributes["cell_method"] += ", area: " + process + " "
+				if "grid_mapping" in nc_out_var.ncattrs():
+					del nc_out_var.grid_mapping
+				if "coordinates" in nc_out_var.ncattrs():
+					del nc_out_var.coordinates
+				if "cell_method" in nc_out_var.ncattrs():
+					nc_out_var.cell_method += ", area: " + process + " "
 		
 
 			# check for rotated pole and copy variable if it exists
-			if "grid_mapping" in nc_out_var._attributes and len(out_dims) == 4:
-				grid_map_name = nc_out_var._attributes["grid_mapping"]
+			if "grid_mapping" in nc_out_var.ncattrs() and len(out_dims) == 4:
+				grid_map_name = getattr(nc_out_var,"grid_mapping")
 				grid_map_var = nc_in_file.variables[grid_map_name]
 				grid_map_out_var = nc_out_file.createVariable(grid_map_name, 'c', ())
-				grid_map_out_var._attributes = grid_map_var._attributes
+				grid_map_out_var.setncatts(grid_map_var.__dict__)
 				# get the global longitude / global latitude vars
-				coords = (nc_out_var._attributes["coordinates"]).split(" ");
+				coords = getattr(nc_out_var,"coordinates").split(" ")
 				global_lon_var = nc_in_file.variables[coords[0]]
 				global_lat_var = nc_in_file.variables[coords[1]]
 				global_lon_data = global_lon_var[lon_lat_idxs[1]:lon_lat_idxs[3], lon_lat_idxs[0]:lon_lat_idxs[2]]
@@ -617,8 +618,8 @@ def process_netcdf(in_ncf,out_name,field,append):
 				out_global_lon_var[:] = global_lon_data
 				out_global_lat_var = nc_out_file.createVariable(coords[1], global_lat_data.dtype, (out_dims[2][0], out_dims[3][0]))
 				out_global_lat_var[:] = global_lat_data
-				out_global_lon_var._attributes = global_lon_var._attributes
-				out_global_lat_var._attributes = global_lat_var._attributes
+				out_global_lon_var.setncatts(global_lon_var.__dict__)
+				out_global_lat_var.setncatts(global_lat_var.__dict__)
 		
 				# assign the data
 				nc_out_var[:] = var_out_data
@@ -644,7 +645,7 @@ def process_netcdf(in_ncf,out_name,field,append):
 	except Exception,e:
 		print 'Failed to create netcdf file'#,os.path.basename(out_name)
 		print e
-		#raise
+#		raise
 		if os.path.exists(out_name):
 			os.remove(out_name)
 		return False

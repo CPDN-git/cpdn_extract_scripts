@@ -40,7 +40,12 @@ def um_to_timestamp(um_datecode):
 	try:dec=int(dec_code) #decade is 0 to 9
 	except: dec=ord(dec_code)-ord('a')+10 #decade is a-z
 	year=int(um_datecode[1])
-	mon=mon_map[um_datecode[2:]]
+	try:
+		mon=mon_map[um_datecode[2:]]
+	except:
+		# Assume a datecode ending in '10' is a yearly file
+		if um_datecode[3:]=='10':
+			mon='yr'
 	return str(1800+dec*10+year)+'-'+str(mon).zfill(2)
 
 

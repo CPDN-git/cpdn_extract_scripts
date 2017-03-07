@@ -38,9 +38,9 @@ BOTH SCRIPTS:
 - -f / --fields: List of (comma separated) fields to extract
 - --structure: Directory structure of extracted data (after output directory) Options for structure are: 
 
-   std: <out_dir>/<region>[_<subregion>]/<variable>/
-   startdate-dir: <out_dir>/<region>[_<subregion>]/<variable>/<startdate>
-   Where: region is [ocean,atmos,region] (depending on the file stream)
+   std: out_dir/region[_subregion]/variable/
+   startdate-dir: out_dir/region[_subregion]/variable/startdate
+   Where: region is [ocean,atmos,region] (depending on the file stream), startdate is yyyymm
 
 ## Each field entry has the format:
 -        [file_stream,stash_code,[subregion],process,valid_min,valid_max,time_freq,cell_method,vert_lev]'

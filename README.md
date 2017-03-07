@@ -13,11 +13,12 @@ First clone the repository using git. i.e. $git clone https://github.com/pfuhe1/
 Requires python2.7 with packages: numpy, netCDF4
 
 ### Suggested installation of dependancies using miniconda
-Miniconda is a stand alone package containing python, enabling users to create environments with the packages they require on a system where they don't have control of the system python installation. 
-1. Download miniconda installer from https://conda.io/miniconda.html
-1. Install miniconda to home directory (following directions on website above)
-1. Close and reopen your terminal so your envionment is updated
-1. Install numpy and netCDF4 to your miniconda environment: run $conda install numpy netCDF4
+Miniconda is a stand alone package containing python, enabling users to create environments with the packages they require on a system where they don't have control of the system python installation.
+
+ 1. Download miniconda installer from https://conda.io/miniconda.html
+ 1. Install miniconda to home directory (following directions on website above)
+ 1. Close and reopen your terminal so your envionment is updated
+ 1. Install numpy and netCDF4 to your miniconda environment: run $conda install numpy netCDF4
 Now you should be ready to go when you run the python scripts. 
 
 

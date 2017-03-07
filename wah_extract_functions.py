@@ -127,7 +127,10 @@ def get_filename(taskpath, field,output_dir,zipstart,zipend,structure='std'):
 	datecode=boinc.split('_')[3]
 	syear=datecode[:4]
 	smon=datecode[4:6]
-	datestart=datetime(int(syear),int(smon),1)
+	try:
+		datestart=datetime(int(syear),int(smon),1)
+	except:
+		datestart=datetime(int(syear),12,1)
 	date1 = add_months(datestart,zipstart-1)
 	date2 = add_months(datestart,zipend-1)
 	date_range = str(date1.year)+'-'+str(date1.month)+'_'+str(date2.year)+'-'+str(date2.month)

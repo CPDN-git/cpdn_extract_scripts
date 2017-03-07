@@ -36,20 +36,25 @@ BOTH SCRIPTS:
 - -s / --start_zip: First zip to extract
 - -e / --end_zip: Last zip to extract
 - -f / --fields: List of (comma separated) fields to extract
+- --structure: Directory structure of extracted data (after output directory) Options for structure are: 
 
-# Each field entry has the format:
--        [file_stream,stash_code,[region],process,valid_min,valid_max,time_freq,cell_method,vert_lev]'
+   std: <out_dir>/<region>[_<subregion>]/<variable>/
+   startdate-dir: <out_dir>/<region>[_<subregion>]/<variable>/<startdate>
+   Where: region is [ocean,atmos,region] (depending on the file stream)
+
+## Each field entry has the format:
+-        [file_stream,stash_code,[subregion],process,valid_min,valid_max,time_freq,cell_method,vert_lev]'
 
 where:
 -        file_stream = ga.pd|ga.pe|ma.pc
 -        stash_code  = stash_section * 1000 + stash_item
--        [region]    = [lon_NW,lat_NW,lon_SW,lat_SW] or []
+-        [subregion]    = [lon_NW,lat_NW,lon_SW,lat_SW] or []
 -        process     = time post_processing: min|max|mean|sum|all
 -        time_freq   = input variable data frequency in hours (e.g. 24=daily, 720=monthly)
 -        cell_method = input variable time cell method: minimum,maximum,mean
 -        vert_lev    = input variable name of vertical level in netcdf file or ''
 
-# Examples can be found in the examples folder:
+## Examples can be found in the examples folder:
 Note that older batches use a different directories structure, so the examples have a few different options (commented out)
 
 

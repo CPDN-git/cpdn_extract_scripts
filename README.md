@@ -19,6 +19,7 @@ Miniconda is a stand alone package containing python, enabling users to create e
  1. Install miniconda to home directory (following directions on website above)
  1. Close and reopen your terminal so your envionment is updated
  1. Install numpy and netCDF4 to your miniconda environment: run $conda install numpy netCDF4
+
 Now you should be ready to go when you run the python scripts. 
 
 

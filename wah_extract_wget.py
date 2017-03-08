@@ -14,7 +14,7 @@ import tempfile, shutil
 import glob
 import argparse
 
-from wah_extract_functions import extract_url,process_netcdf,read_urls
+from wah_extract_functions import extract_url,process_netcdf,read_urls,check_files_exist,get_filename
 
 ###############################################################################
 
@@ -42,6 +42,8 @@ if __name__ == "__main__":
 
 	parser.add_argument('-s','--start_zip',type=int,default=1,help='First zip to extract')
 	parser.add_argument('-e','--end_zip',type=int,default=12,help='Last zip to extract')
+	
+	parser.add_argument('--structure',default='flat',help='Directory structure (after field) [std|startdate-dir]')
 
 	# Get arguments
 	args = parser.parse_args()
@@ -59,6 +61,9 @@ if __name__ == "__main__":
 			print field
 			print fields_help
 			exit()
+			
+	if args.structure!='std' and args.structure!='startdate-dir':
+		raise Exception('Error, --structure argument must be either std or startdate-dir')
 	
 	# Get list of urls of zips to extract
 	urls = read_urls(urls_file)
@@ -73,21 +78,31 @@ if __name__ == "__main__":
 	try:
 		# Loop over tasks
 		for u in list(taskurls):
+			if u.strip()=='':
+				# blank line, skip
+				continue
 			print u
 			
+			# Check if files already exist and skip if the are
+			if check_files_exist(u, field_list,output_dir,start_zip,end_zip,structure=args.structure):
+				continue
+			
 			# Extract zip files into temporary directory
-			base_path,all_netcdfs=extract_url(u, field_list, output_dir, temp_dir,start_zip,end_zip)
+			all_netcdfs=extract_url(u, field_list, output_dir, temp_dir,start_zip,end_zip,structure=args.structure)
 			if not all_netcdfs:
 				continue #something is wrong with this zip or files already exist, continue 
 		
 			# Process fields into single netcdf files
 			for field in field_list:
+				out_file=get_filename(u, field,output_dir,start_zip,end_zip,structure=args.structure)
 				netcdfs=all_netcdfs[field[0]] # List of netcdf files for stream in field (e.g. 'ga.pe')
 				if not netcdfs:
 						print 'Error, no files for requested file stream:',field[0]
 						continue
-				for nc_in_file in netcdfs:
-					out_netcdf=process_netcdf(nc_in_file,base_path,field)
+				for i,nc_in_file in enumerate(netcdfs):
+					if i==0:	append=False
+					else: 		append=True
+					out_netcdf=process_netcdf(nc_in_file,out_file,field,append)
 					if not out_netcdf:
 						break
 					print os.path.basename(out_netcdf)
@@ -98,7 +113,7 @@ if __name__ == "__main__":
 					os.remove(fname)
 	except Exception,e:
 		print 'Error extracting netcdf files',e
-#		raise
+		raise
 	finally:
 		# remove the temporary directory
 		shutil.rmtree(temp_dir)

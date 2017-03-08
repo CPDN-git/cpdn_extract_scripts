@@ -14,7 +14,7 @@ import tempfile, shutil
 import glob
 import argparse
 
-from wah_extract_functions import extract_local,process_netcdf
+from wah_extract_functions import extract_local,process_netcdf,check_files_exist,get_filename
 
 ###############################################################################
 
@@ -42,6 +42,7 @@ if __name__ == "__main__":
 
 	parser.add_argument('-s','--start_zip',type=int,default=1,help='First zip to extract')
 	parser.add_argument('-e','--end_zip',type=int,default=12,help='Last zip to extract')
+	parser.add_argument('--structure',default='std',help='Directory structure [std|startdate-dir]')
 
 	# Get arguments
 	args = parser.parse_args()
@@ -50,6 +51,9 @@ if __name__ == "__main__":
 	in_dir=args.in_dir
 	start_zip=args.start_zip
 	end_zip=args.end_zip
+	
+	if args.structure!='std' and args.structure!='startdate-dir':
+		raise Exception('Error, --structure argument must be either std or startdate-dir')
 		
 	# split the field list up
 	field_list = ast.literal_eval(fields)
@@ -76,19 +80,28 @@ if __name__ == "__main__":
 				continue
 			print u
 			
+			# Check if files already exist and skip if the are
+			if check_files_exist(u, field_list,output_dir,start_zip,end_zip,structure=args.structure):
+				continue
+			
 			# Extract zip files into temporary directory
-			base_path,all_netcdfs=extract_local(u, field_list, output_dir, temp_dir,start_zip,end_zip)
+			all_netcdfs=extract_local(u, field_list, output_dir, temp_dir,start_zip,end_zip,structure=args.structure)
 			if not all_netcdfs:
 				continue #something is wrong with this zip or files already exist, continue 
 		
 			# Process fields into single netcdf files
 			for field in field_list:
+				out_file = get_filename(u, field,output_dir,start_zip,end_zip,structure=args.structure)
 				netcdfs=all_netcdfs[field[0]] # List of netcdf files for stream in field (e.g. 'ga.pe')
 				if not netcdfs:
 						print 'Error, no files for requested file stream:',field[0]
 						continue
-				for nc_in_file in netcdfs:
-					out_netcdf=process_netcdf(nc_in_file,base_path,field)
+				for i,nc_in_file in enumerate(netcdfs):
+					if i==0:
+						append=False
+					else:
+						append=True
+					out_netcdf=process_netcdf(nc_in_file,out_file,field,append)
 					if not out_netcdf:
 						break
 					print os.path.basename(out_netcdf)

@@ -324,10 +324,8 @@ def process_data(var_in_data, process, mv, plon, plat, subset_dims, valid_min, v
 	return out_data
 
 ###############################################################################
-
-def process_data2(var_in_data, process, mv, plon, plat, subset_dims):
-	# mask array before processing (mask only missing values)
-	var_ma_data = numpy.ma.masked_where((var_in_data == mv) , var_in_data)
+# Process data: Assumes var_in_data is a masked array
+def process_data2(var_in_data, process,plon, plat, subset_dims):
 	# do the various processes based on what has been requested
 	if process == "min":
 		out_data = numpy.ma.min(numpy.ma.min(var_ma_data, axis=2), axis=2)
@@ -524,7 +522,7 @@ def process_netcdf(in_ncf,out_name,field,append):
 		# in the middle of the field, not at the beginning
 		if remap_data:
 			in_data = nc_in_var[:,:,lon_lat_idxs[1]:lon_lat_idxs[3],:]	# get the input data - can subset latitude early
-			new_data = numpy.zeros(in_data.shape, 'f') # create a new store
+			new_data = numpy.ma.zeros(in_data.shape, 'f') # create a new store
 			d_len = in_data.shape[3]					# get the longitude length
 			d_len_d2 = d_len / 2						# lon length div 2
 			new_data[:,:,:,0:d_len_d2] = in_data[:,:,:,d_len_d2:d_len]	# copy right hand half to left hand
@@ -535,13 +533,12 @@ def process_netcdf(in_ncf,out_name,field,append):
 
 		# Check data is within range
 		mv = get_missing_value(nc_in_var)
-		masked_data=numpy.ma.masked_where(mv,var_out_data)
-		if not numpy.all(numpy.isfinite(var_out_data)) or numpy.nanmin(masked_data)<v_min or numpy.nanmax(masked_data)>v_max:
-			raise Exception('Data outside valid range ('+str(v_min)+'-'+str(v_max)+') in netcdf file: '+str(numpy.nanmin(masked_data))+','+str(numpy.nanmax(masked_data)))
+		if not numpy.all(numpy.isfinite(var_out_data)) or var_out_data.min()<v_min or var_out_data.max()>v_max:
+			raise Exception('Data outside valid range ('+str(v_min)+' - '+str(v_max)+') in netcdf file: '+str(var_out_data.min())+','+str(var_out_data.max()))
 
 		# if the data is going to be processed then do the processing here
 		if process != "all":
-			var_out_data = process_data2(var_out_data, process, mv, plon, plat, subset_dims)
+			var_out_data = process_data2(var_out_data, process, plon, plat, subset_dims)
 			
 			
 		# Sort out output file:
@@ -554,7 +551,6 @@ def process_netcdf(in_ncf,out_name,field,append):
 		out_var = get_output_field_name3(field)
 		# create the output netCDF file if not appending
 		if append:
-#			nc_out_file = netCDF4.Dataset(out_name, "a") # Can use netCDF4 alternatively
 			nc_out_file = netcdf_file(out_name, "a")
 		else:
 			# check whether it exists

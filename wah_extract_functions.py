@@ -487,6 +487,14 @@ def select_vars_field(nc_file,field_name,meaning_period,cell_method,vert_lev):
 def process_netcdf(in_ncf,out_name,field,append):
 
 	try:
+		item_code = field[1]
+		process = field[3]
+		v_min = field[4]
+		v_max = field[5]
+		meaning_period = field[6]
+		cell_method = field[7]
+		vert_lev = field[8]
+		
 		in_ncf_end=os.path.basename(in_ncf)
 		umid,datestamp=in_ncf_end[:-3].split(field[0])
 	
@@ -494,7 +502,7 @@ def process_netcdf(in_ncf,out_name,field,append):
 		nc_in_file = netcdf_file(in_ncf,'r')
 
 		# get the variable from the input (choose first variable from possible variables)
-		in_vars = select_vars_stash(nc_in_file,field[1],field[6],field[7],field[8])
+		in_vars = select_vars_stash(nc_in_file,item_code,meaning_period,cell_method,vert_lev)
 		in_vars.sort()
 		print in_vars,
 		if len(in_vars)>1:
@@ -503,9 +511,7 @@ def process_netcdf(in_ncf,out_name,field,append):
 	
 		nc_in_var = nc_in_file.variables[in_var]
 		in_dimensions = []
-		process = field[3]
-		v_min = field[4]
-		v_max = field[5]
+
 		
 		# Get the dimensions from input netcdf
 		for d in nc_in_var.dimensions:
@@ -531,6 +537,12 @@ def process_netcdf(in_ncf,out_name,field,append):
 		else:		
 			var_out_data = nc_in_var[:,:,lon_lat_idxs[1]:lon_lat_idxs[3], lon_lat_idxs[0]:lon_lat_idxs[2]]
 
+		# Check we have the correct number of time values:
+		# Note this assumes monthly output data
+		ntime=nc_in_var.shape[0]
+		if ntime != 720. / (meaning_period*1.0):
+			raise Exception('Data has wrong number of times ('+str(ntime)+' for meaning period: '+str(meaning_period))
+		
 		# Check data is within range
 		mv = get_missing_value(nc_in_var)
 		if not numpy.all(numpy.isfinite(var_out_data)) or var_out_data.min()<v_min or var_out_data.max()>v_max:

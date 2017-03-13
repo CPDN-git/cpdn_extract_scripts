@@ -123,28 +123,38 @@ def get_filename(taskpath, field,output_dir,zipstart,zipend,structure='std',zip_
 	stream_map={'ma':'atmos','ga':'region','ka':'atmos','ko':'ocean'}
 	# Different components used in file name and path
 	boinc=taskpath.split('/')[-1]
-	umid=boinc.split('_')[2]
-	datecode=boinc.split('_')[3]
-	syear=datecode[:4]
-	smon=datecode[4:6]
+	
+	# When splitting up the file name by underscore
+	# hadcm3 apps have one less component (e.g. compared to wah2_eu50)
+	if boinc[:6]=='hadcm3':
+		umid=boinc.split('_')[1]
+		datecode=boinc.split('_')[2]
+	else:
+		umid=boinc.split('_')[2]
+		datecode=boinc.split('_')[3]
+	# Get start year and month (old filenames don't contain start month so assume 12)
+	syear=int(datecode[:4])
 	try:
-		datestart=datetime(int(syear),int(smon),1)
-	except:
-		datestart=datetime(int(syear),12,1)
+		smon=int(datecode[4:6])
+	except: 
+		smon = 12
+	# Work out start and end date of output file
+	datestart=datetime(int(syear),int(smon),1)
 	if zip_freq=='month':
 		date1 = add_months(datestart,zipstart-1)
 		date2 = add_months(datestart,zipend-1)
 	elif zip_freq=='year':
 		date1=datestart.replace(year=int(syear)+zipstart-1)
 		datetmp=add_months(date1,11) # First add 11 months for yearly output
-		date2=datetmp.replace(year=datemp.year+zipend-zipstart) #Add number of years
+		date2=datetmp.replace(year=datetmp.year+zipend-zipstart) #Add number of years
 	else:
 		raise Exception('Error, zip freq must be month or year')
 	date_range = str(date1.year)+'-'+str(date1.month)+'_'+str(date2.year)+'-'+str(date2.month)
+	# Other components
 	time_freq=time_freq_friendly(field[6])
 	cell_method=field[7]
 	varname = get_output_field_name3(field)
-	model = stream_map[field[0][:2]]		
+	model = stream_map[field[0][:2]]
 	if field[2]!=[]:
 		coord_string = '_'+ get_coord_string(field[2])
 	else:
@@ -491,7 +501,7 @@ def select_vars_field(nc_file,field_name,meaning_period,cell_method,vert_lev):
 		return varnames
 
 # main function to read in raw netcdf files and write to single variable files
-def process_netcdf(in_ncf,out_name,field,append):
+def process_netcdf(in_ncf,out_name,field,append,zip_freq='month'):
 
 	try:
 		item_code = field[1]
@@ -547,7 +557,11 @@ def process_netcdf(in_ncf,out_name,field,append):
 		# Check we have the correct number of time values:
 		# Note this assumes monthly output data
 		ntime=nc_in_var.shape[0]
-		if ntime != 720. / (meaning_period*1.0):
+		if zip_freq=='month':
+			factor = 720. # hours in a month
+		elif zip_freq=='year':
+			factor = 8640. # hours in a year
+		if ntime != factor / (meaning_period*1.0):
 			raise Exception('Data has wrong number of times ('+str(ntime)+' for meaning period: '+str(meaning_period))
 		
 		# Check data is within range

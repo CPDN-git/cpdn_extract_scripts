@@ -83,16 +83,19 @@ if __name__ == "__main__":
 			
 			# Check if files already exist and skip if the are
 			if check_files_exist(u, field_list,output_dir,start_zip,end_zip,args.structure,args.output_freq):
+				print 'Files exist, skipping'
 				continue
 			
 			# Extract zip files into temporary directory
 			all_netcdfs=extract_local(u, field_list, output_dir, temp_dir,start_zip,end_zip)
 			if not all_netcdfs:
-				continue #something is wrong with this zip or files already exist, continue 
+				print 'Extract failed for task: ',os.path.basename(u)
+				continue 
 		
 			# Process fields into single netcdf files
 			for field in field_list:
 				out_file = get_filename(u, field,output_dir,start_zip,end_zip,structure=args.structure,zip_freq=args.output_freq)
+				print out_file
 				netcdfs=all_netcdfs[field[0]] # List of netcdf files for stream in field (e.g. 'ga.pe')
 				if not netcdfs:
 						print 'Error, no files for requested file stream:',field[0]
@@ -102,7 +105,7 @@ if __name__ == "__main__":
 						append=False
 					else:
 						append=True
-					out_netcdf=process_netcdf(nc_in_file,out_file,field,append)
+					out_netcdf=process_netcdf(nc_in_file,out_file,field,append,zip_freq=args.output_freq))
 					if not out_netcdf:
 						break
 					print os.path.basename(out_netcdf)

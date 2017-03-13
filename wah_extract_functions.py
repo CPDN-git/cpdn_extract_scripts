@@ -367,10 +367,10 @@ def get_missing_value(nc_in_file):
 
 ###############################################################################
 
-def get_rotated_pole(nc_in_file):
+def get_rotated_pole(nc_in_file,nc_in_var):
 	# get the rotated pole longitude / latitude (for calculating weights)
 	try:
-		grid_map_name = getattr(nc_in_file,"grid_mapping")
+		grid_map_name = getattr(nc_in_var,"grid_mapping")
 		grid_map_var = nc_in_file.variables[grid_map_name]	
 		plon = getattr(grid_map_var,"grid_north_pole_longitude")
 		plat = getattr(grid_map_var,"grid_north_pole_latitude")
@@ -538,7 +538,7 @@ def process_netcdf(in_ncf,out_name,field,append,zip_freq='month'):
 			in_dimensions.append([d, dim_in_data])
 		
 		# get the rotated pole definition
-		plon, plat = get_rotated_pole(nc_in_file)
+		plon, plat = get_rotated_pole(nc_in_file,nc_in_var)
 		# subset the dimensions to create the out_dimensions
 		out_dims, subset_dims, lon_lat_idxs, remap_data = subset_dimensions(in_dimensions, field, plon, plat)
 		# if the longitude and latitude indexes are < 0 then we need to remap the data so that 0deg is

@@ -119,7 +119,7 @@ def get_output_field_name3(field):
 
 ###############################################################################
 
-def get_filename(taskpath, field,output_dir,zipstart,zipend,structure='std'):
+def get_filename(taskpath, field,output_dir,zipstart,zipend,structure='std',zip_freq='month'):
 	stream_map={'ma':'atmos','ga':'region','ka':'atmos','ko':'ocean'}
 	# Different components used in file name and path
 	boinc=taskpath.split('/')[-1]
@@ -131,8 +131,15 @@ def get_filename(taskpath, field,output_dir,zipstart,zipend,structure='std'):
 		datestart=datetime(int(syear),int(smon),1)
 	except:
 		datestart=datetime(int(syear),12,1)
-	date1 = add_months(datestart,zipstart-1)
-	date2 = add_months(datestart,zipend-1)
+	if zip_freq=='month':
+		date1 = add_months(datestart,zipstart-1)
+		date2 = add_months(datestart,zipend-1)
+	elif zip_freq=='year':
+		date1=datestart.replace(year=int(syear)+zipstart-1)
+		datetmp=add_months(date1,11) # First add 11 months for yearly output
+		date2=datetmp.replace(year=datemp.year+zipend-zipstart) #Add number of years
+	else:
+		raise Exception('Error, zip freq must be month or year')
 	date_range = str(date1.year)+'-'+str(date1.month)+'_'+str(date2.year)+'-'+str(date2.month)
 	time_freq=time_freq_friendly(field[6])
 	cell_method=field[7]
@@ -153,12 +160,12 @@ def get_filename(taskpath, field,output_dir,zipstart,zipend,structure='std'):
 
 ###############################################################################
 
-def check_files_exist(taskpath, field_list,output_dir,zipstart,zipend,structure):
+def check_files_exist(taskpath, field_list,output_dir,zipstart,zipend,structure,zip_freq):
 
 	# Loop over fields/ variables
 	for field in field_list:
 		# If the file doesn't exist return false
-		fname=get_filename(taskpath,field,output_dir,zipstart,zipend,structure)
+		fname=get_filename(taskpath,field,output_dir,zipstart,zipend,structure=structure,zip_freq=zip_freq)
 		if not os.path.exists(fname):
 			return False
 	# We got to the end, all files must exist
@@ -674,9 +681,9 @@ def add_months(date,months):
 
 ###############################################################################
 
-def extract_local(taskpath, field_list, output_dir, temp_dir,zipstart,zipend,structure='std'):
+def extract_local(taskpath, field_list, output_dir, temp_dir, zipstart, zipend):
 	boinc=taskpath.split('/')[-1]
-	
+
 	# Set up dictionary for list of extracted files (by file stream)
 	extracted_netcdfs={}
 	for field in field_list:
@@ -719,15 +726,9 @@ def extract_local(taskpath, field_list, output_dir, temp_dir,zipstart,zipend,str
 
 ###############################################################################
 
-def extract_url(taskurl, field_list, output_dir,temp_dir,zipstart,zipend,structure='std'):
+def extract_url(taskurl, field_list, output_dir, temp_dir, zipstart, zipend):
 	boinc=taskurl.split('/')[-1]
 	
-	# Check if files requested to be produced from this task already exist
-	files_exist = check_files_exist(taskurl, field_list, output_dir,zipstart,zipend,structure=structure)
-	if files_exist:
-		print 'Files already exist, skipping!'
-		return False
-		
 	# Set up dictionary for list of extracted files (by file stream)
 	extracted_netcdfs={}
 	for field in field_list:

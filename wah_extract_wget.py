@@ -44,6 +44,7 @@ if __name__ == "__main__":
 	parser.add_argument('-e','--end_zip',type=int,default=12,help='Last zip to extract')
 	
 	parser.add_argument('--structure',default='std',help='Directory structure (after field) [std|startdate-dir]')
+	parser.add_argument('--output-freq',default='month',help='Output frequency of model zip/data files [monthly|yearly]')
 
 	# Get arguments
 	args = parser.parse_args()
@@ -84,17 +85,17 @@ if __name__ == "__main__":
 			print u
 			
 			# Check if files already exist and skip if the are
-			if check_files_exist(u, field_list,output_dir,start_zip,end_zip,structure=args.structure):
+			if check_files_exist(u, field_list,output_dir,start_zip,end_zip,args.structure,args.output_freq):
 				continue
 			
 			# Extract zip files into temporary directory
-			all_netcdfs=extract_url(u, field_list, output_dir, temp_dir,start_zip,end_zip,structure=args.structure)
+			all_netcdfs=extract_url(u, field_list, output_dir, temp_dir,start_zip,end_zip)
 			if not all_netcdfs:
 				continue #something is wrong with this zip or files already exist, continue 
 		
 			# Process fields into single netcdf files
 			for field in field_list:
-				out_file=get_filename(u, field,output_dir,start_zip,end_zip,structure=args.structure)
+				out_file=get_filename(u, field,output_dir,start_zip,end_zip,structure=args.structure,zip_freq=args.output_freq)
 				netcdfs=all_netcdfs[field[0]] # List of netcdf files for stream in field (e.g. 'ga.pe')
 				if not netcdfs:
 						print 'Error, no files for requested file stream:',field[0]

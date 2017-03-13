@@ -12,7 +12,7 @@ BATCH_LIST_URL=http://upload2.cpdn.org/project_results/$PROJECT/batch_${BATCH}/b
 #BATCH_LIST_URL=http://upload2.cpdn.org/results/batch_${BATCH}/batch_${BATCH}.txt.gz
 # Alternate form of the BATCH_LIST_URL including model name (for EVEN older batches):
 #MODEL=hadam3p_eu
-#BATCH_LIST_URL=http://upload2.cpdn.org/results/$MODEL/batch_${BATCH}/batch_${BATCH}.txt.gz
+#BATCH_LIST_URL=http://upload2.cpdn.org/results/$MODEL/batch${BATCH}/batch${BATCH}.txt.gz
 
 # Start and end zip to extract data from:
 START_ZIP=1

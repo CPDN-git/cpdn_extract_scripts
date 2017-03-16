@@ -105,7 +105,7 @@ if __name__ == "__main__":
 						append=False
 					else:
 						append=True
-					out_netcdf=process_netcdf(nc_in_file,out_file,field,append,zip_freq=args.output_freq))
+					out_netcdf=process_netcdf(nc_in_file,out_file,field,append,zip_freq=args.output_freq)
 					if not out_netcdf:
 						break
 					print os.path.basename(out_netcdf)

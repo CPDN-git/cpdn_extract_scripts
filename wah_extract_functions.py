@@ -576,19 +576,18 @@ def process_netcdf(in_ncf,out_name,field,append,zip_freq='month'):
 			
 		# Sort out output file:
 		#
-		# First make the directory 
-		out_dir=os.path.dirname(out_name)
-		if not os.path.exists(out_dir):
-			os.makedirs(out_dir)
-		
 		out_var = get_output_field_name3(field)
 		# create the output netCDF file if not appending
 		if append:
-			nc_out_file = netcdf_file(out_name, "a")
+			if not os.path.exists(out_name):
+				raise Exception('Error, expecting to append to file but no file exists')
+			else:
+				nc_out_file = netcdf_file(out_name, "a")
 		else:
 			# check whether it exists
 			if os.path.exists(out_name):
-				return False
+				# remove existing file to make sure this is clean
+				os.remove(out_name)
 
 			# Set up new file
 			nc_out_file = netcdf_file(out_name, "w",format='NETCDF3_CLASSIC')
@@ -682,7 +681,7 @@ def process_netcdf(in_ncf,out_name,field,append,zip_freq='month'):
 		if os.path.exists(out_name):
 			os.remove(out_name)
 		return False
-	return out_name
+	return True
 
 # Add months to datetime object
 def add_months(date,months):

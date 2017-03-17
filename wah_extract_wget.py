@@ -76,6 +76,7 @@ if __name__ == "__main__":
 	
 	# create a temporary directory - do we have permission?
 	temp_dir = tempfile.mkdtemp(dir=os.environ['HOME'])
+	temp_nc = os.path.join(temp_dir,'tmp.nc')
 	try:
 		# Loop over tasks
 		for u in list(taskurls):
@@ -106,10 +107,17 @@ if __name__ == "__main__":
 				for i,nc_in_file in enumerate(netcdfs):
 					if i==0:	append=False
 					else: 		append=True
-					out_netcdf=process_netcdf(nc_in_file,out_file,field,append,zip_freq=args.output_freq)
+					out_netcdf=process_netcdf(nc_in_file,temp_nc,field,append,zip_freq=args.output_freq)
 					if not out_netcdf:
 						break
-					print os.path.basename(out_netcdf)
+				# Successfully created file:
+				# First make the directory 
+				out_dir=os.path.dirname(out_file)
+				if not os.path.exists(out_dir):
+					os.makedirs(out_dir)
+				# Rename temp file to out_netcdf
+				os.rename(temp_nc,out_file)
+				print os.path.basename(out_file)
 				
 			# Remove netcdf files to stop temp directory getting too big
 			for nc_list in all_netcdfs.itervalues():

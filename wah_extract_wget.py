@@ -116,7 +116,7 @@ if __name__ == "__main__":
 				if not os.path.exists(out_dir):
 					os.makedirs(out_dir)
 				# Rename temp file to out_netcdf
-				os.rename(temp_nc,out_file)
+				shutil.move(temp_nc,out_file)
 				print os.path.basename(out_file)
 				
 			# Remove netcdf files to stop temp directory getting too big

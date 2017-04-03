@@ -149,7 +149,7 @@ def get_filename(taskpath, field,output_dir,zipstart,zipend,structure='std',zip_
 		date2=datetmp.replace(year=datetmp.year+zipend-zipstart) #Add number of years
 	else:
 		raise Exception('Error, zip freq must be month or year')
-	date_range = str(date1.year)+'-'+str(date1.month)+'_'+str(date2.year)+'-'+str(date2.month)
+	date_range = str(date1.year)+'-'+str(date1.month).zfill(2)+'_'+str(date2.year)+'-'+str(date2.month).zfill(2)
 	# Other components
 	time_freq=time_freq_friendly(field[6])
 	cell_method=field[7]

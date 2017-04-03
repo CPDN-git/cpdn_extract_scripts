@@ -111,13 +111,14 @@ if __name__ == "__main__":
 					if not out_netcdf:
 						break
 				# Successfully created file:
-				# First make the directory 
-				out_dir=os.path.dirname(out_file)
-				if not os.path.exists(out_dir):
-					os.makedirs(out_dir)
-				# Rename temp file to out_netcdf
-				shutil.move(temp_nc,out_file)
-				print os.path.basename(out_file)
+				if out_netcdf:
+					# First make the directory 
+					out_dir=os.path.dirname(out_file)
+					if not os.path.exists(out_dir):
+						os.makedirs(out_dir)
+					# Rename temp file to out_netcdf
+					shutil.move(temp_nc,out_file)
+					print os.path.basename(out_file)
 				
 			# Remove netcdf files to stop temp directory getting too big
 			for nc_list in all_netcdfs.itervalues():

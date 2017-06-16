@@ -7,7 +7,7 @@
 
 ## Installation:
 
-First clone the repository using git. i.e. $git clone https://github.com/pfuhe1/cpdn_extract_scripts.git
+First clone the repository using git. i.e. $git clone https://github.com/CPDN-git/cpdn_extract_scripts
 
 ### Dependencies
 Requires python2.7 with packages: numpy, netCDF4

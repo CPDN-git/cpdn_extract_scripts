@@ -13,6 +13,7 @@ import ast
 import tempfile, shutil
 import glob
 import argparse
+import traceback
 
 from wah_extract_functions import extract_local,process_netcdf,check_files_exist,get_filename
 
@@ -125,7 +126,7 @@ if __name__ == "__main__":
 					os.remove(fname)
 	except Exception,e:
 		print 'Error extracting netcdf files',e
-#		raise
+		traceback.print_exc()
 	finally:
 		# remove the temporary directory
 		shutil.rmtree(temp_dir)

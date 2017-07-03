@@ -726,6 +726,7 @@ def extract_local(taskpath, field_list, output_dir, temp_dir, zipstart, zipend):
 						found=True
 				if not found: # We are not using this file
 					os.remove(fname)
+			zf.close()
 	except Exception,e:
 		print "Could not extract file: " + path
 		print e
@@ -778,8 +779,10 @@ def extract_url(taskurl, field_list, output_dir, temp_dir, zipstart, zipend):
 						found=True
 				if not found: # We are not using this file
 					os.remove(fname)
-			# Remove downloaded zipfile
+			# Remove downloaded zipfile and clean up file handles
+			zf.close()
 			os.remove(zf_fh.name)
+			zf_fh.close()
 	except Exception,e:
 		print "Could not extract url: "
 		print e
@@ -787,6 +790,11 @@ def extract_url(taskurl, field_list, output_dir, temp_dir, zipstart, zipend):
 		for nc_list in extracted_netcdfs.itervalues():
 			for fname in nc_list:
 				os.remove(fname)
+		# Remove downloaded zipfile and clean up file handle
+		if os.path.exists(zf_fh.name):
+			os.remove(zf_fh.name)
+		if not zf_fh.closed:
+			zf_fh.close()
 #		raise
 		return False
 	# Success

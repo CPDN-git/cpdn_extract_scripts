@@ -73,8 +73,13 @@ if __name__ == "__main__":
 	print 'Number of tasks:',len(taskdirs)
 	
 	# create a temporary directory in home directory
-	temp_dir = tempfile.mkdtemp(dir=os.environ['HOME'])
-	temp_nc = os.path.join(temp_dir,'tmp.nc')
+	# temp_dir = tempfile.mkdtemp(dir=os.environ['HOME'])
+        tmp_dir = os.path.join(output_dir+'/tmp')
+        if not os.path.exists(output_dir): 
+ 		os.makedirs(output_dir) 
+                os.makedirs(tmp_dir)
+        temp_dir = tempfile.mkdtemp(dir=tmp_dir)
+        temp_nc = os.path.join(temp_dir,'tmp.nc')
 	try:
 		# Loop over tasks
 		for u in list(taskdirs):
@@ -129,4 +134,5 @@ if __name__ == "__main__":
 		traceback.print_exc()
 	finally:
 		# remove the temporary directory
-		shutil.rmtree(temp_dir)
+		shutil.rmtree(temp_dir,ignore_errors=True)
+                shutil.rmtree(tmp_dir,ignore_errors=True)

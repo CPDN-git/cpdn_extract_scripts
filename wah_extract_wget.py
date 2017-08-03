@@ -13,6 +13,7 @@ import ast
 import tempfile, shutil
 import glob
 import argparse
+import traceback
 
 from wah_extract_functions import extract_url,process_netcdf,read_urls,check_files_exist,get_filename
 
@@ -75,8 +76,15 @@ if __name__ == "__main__":
 	print 'Number of tasks:',len(taskurls)
 	
 	# create a temporary directory - do we have permission?
-	temp_dir = tempfile.mkdtemp(dir=os.environ['HOME'])
-	temp_nc = os.path.join(temp_dir,'tmp.nc')
+        #temp_dir = tempfile.mkdtemp(dir=os.environ['HOME'])
+    tmp_dir = os.path.join(output_dir+'/tmp')
+	if not os.path.exists(output_dir): 
+		os.makedirs(output_dir) 
+    	if not os.path.exists(tmp_dir):
+    		os.makedirs(tmp_dir)
+    	print 'created temporary dir: ',os.path.basename(tmp_dir)
+    	temp_dir = tempfile.mkdtemp(dir=tmp_dir)
+    	temp_nc = os.path.join(temp_dir,'tmp.nc')
 	try:
 		# Loop over tasks
 		for u in list(taskurls):
@@ -126,7 +134,8 @@ if __name__ == "__main__":
 					os.remove(fname)
 	except Exception,e:
 		print 'Error extracting netcdf files',e
-		raise
+		traceback.print_exc()
 	finally:
 		# remove the temporary directory
-		shutil.rmtree(temp_dir)
+		shutil.rmtree(temp_dir,ignore_errors=True)
+		shutil.rmtree(tmp_dir,ignore_errors=True)

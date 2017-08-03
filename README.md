@@ -7,7 +7,7 @@
 
 ## Installation:
 
-First clone the repository using git. i.e. $git clone https://github.com/pfuhe1/cpdn_extract_scripts.git
+First clone the repository using git. i.e. $git clone https://github.com/CPDN-git/cpdn_extract_scripts
 
 ### Dependencies
 Requires python2.7 with packages: numpy, netCDF4
@@ -61,7 +61,7 @@ BOTH SCRIPTS:
 where:
 -        file_stream = ga.pd|ga.pe|ma.pc
 -        stash_code  = stash_section * 1000 + stash_item
--        [subregion]    = [lon_NW,lat_NW,lon_SW,lat_SW] or []
+-        [subregion]    = [lon_NW,lat_NW,lon_SE,lat_SE] or []
 -        process     = time post_processing: min|max|mean|sum|all
 -        time_freq   = input variable data frequency in hours (e.g. 24=daily, 720=monthly)
 -        cell_method = input variable time cell method: minimum,maximum,mean

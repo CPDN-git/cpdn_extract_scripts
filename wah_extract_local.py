@@ -74,7 +74,6 @@ if __name__ == "__main__":
 	
 	# create a temporary directory in home directory
 	# temp_dir = tempfile.mkdtemp(dir=os.environ['HOME'])
-<<<<<<< HEAD
 	tmp_dir = os.path.join(output_dir+'/tmp')
 	if not os.path.exists(output_dir): 
 		os.makedirs(output_dir) 
@@ -83,14 +82,6 @@ if __name__ == "__main__":
     	print 'created temporary dir: ',os.path.basename(tmp_dir)
     	temp_dir = tempfile.mkdtemp(dir=tmp_dir)
     	temp_nc = os.path.join(temp_dir,'tmp.nc')
-=======
-        tmp_dir = os.path.join(output_dir+'/tmp')
-        if not os.path.exists(output_dir): 
- 		os.makedirs(output_dir) 
-                os.makedirs(tmp_dir)
-        temp_dir = tempfile.mkdtemp(dir=tmp_dir)
-        temp_nc = os.path.join(temp_dir,'tmp.nc')
->>>>>>> 6b95dc104c611e6747c806691f0f13845c63b238
 	try:
 		# Loop over tasks
 		for u in list(taskdirs):
@@ -146,8 +137,4 @@ if __name__ == "__main__":
 	finally:
 		# remove the temporary directory
 		shutil.rmtree(temp_dir,ignore_errors=True)
-<<<<<<< HEAD
         shutil.rmtree(tmp_dir,ignore_errors=True)
-=======
-                shutil.rmtree(tmp_dir,ignore_errors=True)
->>>>>>> 6b95dc104c611e6747c806691f0f13845c63b238

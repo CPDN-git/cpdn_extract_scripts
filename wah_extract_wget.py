@@ -77,12 +77,14 @@ if __name__ == "__main__":
 	
 	# create a temporary directory - do we have permission?
         #temp_dir = tempfile.mkdtemp(dir=os.environ['HOME'])
-        tmp_dir = os.path.join(output_dir+'/tmp')
-	if not os.path.exists(output_dir):
-                os.makedirs(output_dir)
-                os.makedirs(tmp_dir)
-	temp_dir = tempfile.mkdtemp(dir=tmp_dir)
-	temp_nc = os.path.join(temp_dir,'tmp.nc')
+    tmp_dir = os.path.join(output_dir+'/tmp')
+	if not os.path.exists(output_dir): 
+		os.makedirs(output_dir) 
+    	if not os.path.exists(tmp_dir):
+    		os.makedirs(tmp_dir)
+    	print 'created temporary dir: ',os.path.basename(tmp_dir)
+    	temp_dir = tempfile.mkdtemp(dir=tmp_dir)
+    	temp_nc = os.path.join(temp_dir,'tmp.nc')
 	try:
 		# Loop over tasks
 		for u in list(taskurls):

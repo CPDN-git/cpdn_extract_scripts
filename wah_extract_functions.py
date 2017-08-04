@@ -1,5 +1,6 @@
 ###############################################################################
 # Program : wah_extract_functions.py
+# Sihan Li: Modified to include vertical integrated variables & snapshots
 # Author  : Peter Uhe, based on original scripts by Neil Massey
 # Date	  : 09/09/16
 # Purpose : Functions to extract w@h zip files and extract the 
@@ -439,8 +440,15 @@ def select_vars_stash(nc_file,stash_code,meaning_period,cell_method,vert_lev):
 #		if varname[:len(field_name)]==field_name:
 		if int(stash_code)==var_stash_code:
 			# Get cell method
-			tmp=var.cell_method
-			dim,var_cell_method=tmp.split()
+			tmp = var.cell_method.split()
+			dim = tmp[0]
+			var_cell_method=tmp[1]
+			print var.cell_method
+			print dim
+			print var_cell_method
+			# switch to get other types of cell_method
+			# tmp=var.cell_method
+			# dim,var_cell_method=tmp.split()
 			if not dim=='time:':
 				raise Exception('Error, expecting cell method for time, got: '+dim)
 			# Get meaning period from time dimension

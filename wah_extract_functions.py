@@ -406,11 +406,13 @@ def select_var(nc_file,stash_code,meaning_period,cell_method):
 				raise Exception('Error, expecting cell method for time, got: '+dim)
 			# Get meaning period from time dimension
 			time_dim=nc_file.variables[var.dimensions[0]]
-			tmp=time_dim.meaning_period
-			var_meaning_period,units=tmp.split()
-			if not units=='hours':
-				raise Exception('Error, expecting meaning period in hours, got: '+units)
-			# Check if this variable matches the required meaning period and cell method
+			if 'meaning_period' in time_dim.ncattrs():
+				var_meaning_period,units=time_dim.meaning_period.split()
+				if not units=='hours':
+					raise Exception('Error, expecting meaning period in hours, got: '+units)
+			else: # If there is no meaning period, just use expected value
+				var_meaning_period = meaning_period
+
 			if int(meaning_period)==int(var_meaning_period) and cell_method==var_cell_method:
 				return varname
 			else:
@@ -454,10 +456,13 @@ def select_vars_stash(nc_file,stash_code,meaning_period,cell_method,vert_lev):
 			# Get meaning period from time dimension
 			dims=var.dimensions
 			time_dim=nc_file.variables[dims[0]]
-			tmp=time_dim.meaning_period
-			var_meaning_period,units=tmp.split()
-			if not units=='hours':
-				raise Exception('Error, expecting meaning period in hours, got: '+units)
+			if 'meaning_period' in time_dim.ncattrs():
+				var_meaning_period,units=time_dim.meaning_period.split()
+				if not units=='hours':
+					raise Exception('Error, expecting meaning period in hours, got: '+units)
+			else: # If there is no meaning period to check, just set expected value
+				var_meaning_period = meaning_period
+
 			# Check if this variable matches the required meaning period and cell method
 			if int(meaning_period)==int(var_meaning_period) and cell_method==var_cell_method:
 				if vert_lev=='any': # Any level

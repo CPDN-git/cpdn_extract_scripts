@@ -2,8 +2,8 @@
 
 ###############################################################################
 # Program : wah_extract_local.py
-# Author  : Peter Uhe, based on original scripts by Neil Massey
-# Date	  : 09/09/16
+# Author  : Sihan Li, Peter Uhe, based on original scripts by Neil Massey
+# Date	  : 09/08/17
 # Purpose : Script to specify the urls of w@h zip files, then download and extract 
 #           the data of requested fields into separate netCDF files
 ###############################################################################
@@ -12,6 +12,7 @@ import sys, os
 import ast
 import tempfile, shutil
 import glob
+import fnmatch
 import argparse
 import traceback
 
@@ -40,7 +41,8 @@ if __name__ == "__main__":
 	fields_help+='\n      :        cell_method = input variable time cell method: minimum,maximum,mean'
 	fields_help+='\n      :        vert_lev = (optional) input variable name of vertical level in netcdf file'
 	parser.add_argument('-f','--fields',required=True,help=fields_help)
-
+	# add in argument for selecting one year
+        parser.add_argument('-y','--year',default=0,help='Year to extract: specifiy a particular year to extract, if need to extract all years, set to 0')
 	parser.add_argument('-s','--start_zip',type=int,default=1,help='First zip to extract')
 	parser.add_argument('-e','--end_zip',type=int,default=12,help='Last zip to extract')
 	
@@ -52,6 +54,7 @@ if __name__ == "__main__":
 	fields=args.fields
 	output_dir=args.out_dir
 	urls_file=args.urls_file
+	year_to_extract=args.year
 	start_zip=args.start_zip
 	end_zip=args.end_zip
 		
@@ -70,14 +73,24 @@ if __name__ == "__main__":
 	# Get list of urls of zips to extract
 	urls = read_urls(urls_file)
 	# Strip away the zip name, leaving the path of the task
-	taskurls= set(map(os.path.dirname,urls))
-
+	# taskurls= set(map(os.path.dirname,urls))
+	YearCode=int(year_to_extract)
+        if YearCode == 0:
+		taskurls= set(map(os.path.dirname,urls))
+                # taskdirs = glob.glob(in_dir+'*')
+        else:
+                YearString='_'+ str(YearCode) + '*'
+                # pathhh= os.path.join(in_dir+'*'+YearString)
+		pathhh = fnmatch.fnmatch(urls,YearString)
+		taskurls= set(map(os.path.dirname,pathhh))
+                # taskdirs= glob.glob(pathhh)
+        print 'Year to extract:',YearCode
 	print 'fields',field_list
 	print 'Number of tasks:',len(taskurls)
 	
 	# create a temporary directory - do we have permission?
         #temp_dir = tempfile.mkdtemp(dir=os.environ['HOME'])
-    tmp_dir = os.path.join(output_dir+'/tmp')
+	tmp_dir = os.path.join(output_dir+'/tmp')
 	if not os.path.exists(output_dir): 
 		os.makedirs(output_dir) 
     	if not os.path.exists(tmp_dir):

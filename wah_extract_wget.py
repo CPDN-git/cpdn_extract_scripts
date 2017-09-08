@@ -77,13 +77,10 @@ if __name__ == "__main__":
 	YearCode=int(year_to_extract)
         if YearCode == 0:
 		taskurls= set(map(os.path.dirname,urls))
-                # taskdirs = glob.glob(in_dir+'*')
         else:
-                YearString='_'+ str(YearCode) + '*'
-                # pathhh= os.path.join(in_dir+'*'+YearString)
-		pathhh = fnmatch.filter(urls,YearString)
+                YearString='_'+ str(YearCode) + '12'
+		pathhh = [s for s in urls if YearString in s]	
 		taskurls= set(map(os.path.dirname,pathhh))
-                # taskdirs= glob.glob(pathhh)
         print 'Year to extract:',YearCode
 	print 'fields',field_list
 	print 'Number of tasks:',len(taskurls)

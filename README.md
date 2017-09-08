@@ -40,7 +40,7 @@ Now you should be ready to go when you run the python scripts.
 
 wah_extract_local.py ONLY:
 - -i / --in_dir: input directory containing subfolders for each task (e.g. /gpfs/projects/cpdn/storage/boinc/upload/batch_440/successful/)
-
+Please Note: need to include the '/' as the end of the input directory name
 wah_extract_wget.py ONLY:
 - -u / --urls_file: File containing list of urls of zip files (in gzipped format)
 

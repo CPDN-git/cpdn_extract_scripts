@@ -81,7 +81,7 @@ if __name__ == "__main__":
         else:
                 YearString='_'+ str(YearCode) + '*'
                 # pathhh= os.path.join(in_dir+'*'+YearString)
-		pathhh = fnmatch.fnmatch(urls,YearString)
+		pathhh = fnmatch.filter(urls,YearString)
 		taskurls= set(map(os.path.dirname,pathhh))
                 # taskdirs= glob.glob(pathhh)
         print 'Year to extract:',YearCode

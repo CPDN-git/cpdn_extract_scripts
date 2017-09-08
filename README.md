@@ -46,6 +46,7 @@ wah_extract_wget.py ONLY:
 
 BOTH SCRIPTS:
 - -o / --out_dir: output directory for extracted data
+- -y / --year: Specify a certain year to extract, if need to extract all, set to 0
 - -s / --start_zip: First zip to extract
 - -e / --end_zip: Last zip to extract
 - -f / --fields: List of (comma separated) fields to extract

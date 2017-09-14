@@ -19,7 +19,7 @@ START_ZIP=2
 END_ZIP=16
 
 # Extract data from the batch directory ['ga.pd',5216,[],'all',-0.0001,1,24,'mean','z0'],\
-$EXTRACT_SCRIPTS_DIR/wah_extract_local_year.py -i $BATCH_DATA_DIR \
+$EXTRACT_SCRIPTS_DIR/wah_extract_local.py -i $BATCH_DATA_DIR \
 -f "\
 ['ga.pe',15201,[],'all',-100,100,720,'mean','z7'],\
 ['ga.pe',15202,[],'all',-100,100,720,'mean','z7'],\

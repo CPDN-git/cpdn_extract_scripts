@@ -16,7 +16,7 @@ BATCH_LIST_URL=http://upload2.cpdn.org/project_results/$PROJECT/batch_${BATCH}/b
 #BATCH_LIST_URL=http://upload2.cpdn.org/results/$MODEL/batch${BATCH}/batch${BATCH}.txt.gz
 
 # Specify a certain year to extract, if extract all years, set to 0
-Year=2015
+YEAR=2015
 
 # Start and end zip to extract data from:
 START_ZIP=1
@@ -34,4 +34,4 @@ $EXTRACT_SCRIPTS_DIR/wah_extract_wget.py -u ./batch_${BATCH}.txt.gz \
 ['ma.pc',3236,[],'all',150,400,720,'mean',''],\
 ['ga.pe',5216,[],'all',-0.0001,1,720,'mean',''],\
 ['ga.pd',5216,[],'all',-0.0001,1,24,'mean','z0'],\
-"  -o $EXTRACT_DATA_DIR/batch_${BATCH} -y $Year -s $START_ZIP -e $END_ZIP
+"  -o $EXTRACT_DATA_DIR/batch_${BATCH} -y $YEAR -s $START_ZIP -e $END_ZIP

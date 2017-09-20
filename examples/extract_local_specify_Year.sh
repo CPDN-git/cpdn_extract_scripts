@@ -10,9 +10,11 @@ EXTRACT_DATA_DIR=/gpfs/projects/cpdn/scratch/cenv0628/extracted_hist/
 
 # Current URL for uploads includes project and batch number
 BATCH=619
-BATCH_DATA_DIR=/gpfs/projects/cpdn/storage/boinc/project_results/tnc/batch_${BATCH}/successful/
+PROJECT=tnc
+DATA_DIR=/gpfs/projects/cpdn/storage/boinc/project_results/$PROJECT
+BATCH_DATA_DIR=$DATA_DIR/batch_${BATCH}/successful/
 # Specify a certain year to extract, if extract all years, set to 0
-Year=2015
+YEAR=2015
 
 # Start and end zip to extract data from:
 START_ZIP=2
@@ -25,4 +27,4 @@ $EXTRACT_SCRIPTS_DIR/wah_extract_local.py -i $BATCH_DATA_DIR \
 ['ga.pe',15202,[],'all',-100,100,720,'mean','z7'],\
 ['ga.pe',16203,[],'all',150,400,720,'mean','z7'],\
 ['ga.pe',16202,[],'all',1000,15000,720,'mean','z7'],\
-"  -o $EXTRACT_DATA_DIR/batch_${BATCH} -y $Year -s $START_ZIP -e $END_ZIP
+"  -o $EXTRACT_DATA_DIR/batch_${BATCH} -y $YEAR -s $START_ZIP -e $END_ZIP

@@ -11,7 +11,8 @@ EXTRACT_DATA_DIR=../extracted_data
 # Current URL for uploads includes project and batch number
 BATCH=500
 PROJECT=science
-BATCH_DATA_DIR=/gpfs/projects/cpdn/storage/boinc/project_results/$PROJECT/batch_${BATCH}/successful/
+DATA_DIR=gpfs/projects/cpdn/storage/boinc/project_results/$PROJECT
+BATCH_DATA_DIR=$DATA_DIR/batch_${BATCH}/successful/
 # Alternate form of the BATCH_LIST_URL (for older batches):
 # BATCH_DATA_DIR=/gpfs/projects/cpdn/storage/boinc/results/batch_${BATCH}/successful/
 # Alternate form of the BATCH_LIST_URL including model name (for EVEN older batches):

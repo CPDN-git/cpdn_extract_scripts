@@ -54,6 +54,7 @@ if __name__ == "__main__":
 
 	# Get arguments
 	args = parser.parse_args()
+	batch=args.batch
 	fields=args.fields
 	output_dir=args.out_dir
 	urls_file=args.urls_file

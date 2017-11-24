@@ -1,0 +1,19 @@
+# Author: Sihan Li, 24/11/2017
+# wah2 eas50 grid
+#
+gridtype  = lonlat
+gridsize  = 33901
+xname     = longitude0
+xlongname = longitude in rotated pole grid
+xunits    = degrees
+yname     = latitude0
+ylongname = latitude in rotated pole grid
+yunits    = degrees
+xsize     = 203
+ysize     = 167
+xnpole    = 295.2200
+ynpole    = 77.6100
+xfirst    = 319.080
+xinc      = 0.44
+yfirst    = 46.2000
+yinc      = -0.44

@@ -1,0 +1,19 @@
+# Author: Sihan Li, 24/11/2017
+# wah2 pnw25 grid
+#
+gridtype  = lonlat
+gridsize  = 12870
+xname     = longitude0
+xlongname = longitude in rotated pole grid
+xunits    = degrees
+yname     = latitude0
+ylongname = latitude in rotated pole grid
+yunits    = degrees
+xsize     = 110
+ysize     = 117
+xnpole    = 58.4000
+ynpole    = 49.0300
+xfirst    = 347.680
+xinc      = 0.22
+yfirst    = 13.4200
+yinc      = -0.22

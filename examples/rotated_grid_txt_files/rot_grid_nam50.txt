@@ -1,0 +1,19 @@
+# Author: Sihan Li, 24/11/2017
+# wah2 nam50 grid
+#
+gridtype  = lonlat
+gridsize  = 24426
+xname     = longitude0
+xlongname = longitude in rotated pole grid
+xunits    = degrees
+yname     = latitude0
+ylongname = latitude in rotated pole grid
+yunits    = degrees
+xsize     = 177
+ysize     = 138
+xnpole    = 70
+ynpole    = 47
+xfirst    = 330.0
+xinc      = 0.44
+yfirst    = 28
+yinc      = -0.44

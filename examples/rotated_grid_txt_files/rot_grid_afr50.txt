@@ -1,0 +1,19 @@
+# Author: Sihan Li, 24/11/2017
+# wah2 afr50 grid
+#
+gridtype  = lonlat
+gridsize  = 27600
+xname     = longitude0
+xlongname = longitude in rotated pole grid
+xunits    = degrees
+yname     = latitude0
+ylongname = latitude in rotated pole grid
+yunits    = degrees
+xsize     = 200
+ysize     = 138
+xnpole    = 180.0
+ynpole    = 90.0
+xfirst    = 335.0
+xinc      = 0.44
+yfirst    = 46.0
+yinc      = -0.44

@@ -1,0 +1,19 @@
+# Author: Sihan Li, 24/11/2017
+# wah2 sam25 grid
+#
+gridtype  = lonlat
+gridsize  = 69864
+xname     = longitude0
+xlongname = longitude in rotated pole grid
+xunits    = degrees
+yname     = latitude0
+ylongname = latitude in rotated pole grid
+yunits    = degrees
+xsize     = 284
+ysize     = 246
+xnpole    = 301.45
+ynpole    = 81.82
+xfirst    = 147
+xinc      = 0.22
+yfirst    = 26.94
+yinc      = -0.22

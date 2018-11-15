@@ -439,20 +439,20 @@ def select_vars_stash(nc_file,stash_code,meaning_period,cell_method,vert_lev):
 		except:
 			# Not a stash item
 			continue
-#		if varname[:len(field_name)]==field_name:
 		if int(stash_code)==var_stash_code:
-			# Get cell method
-			tmp = var.cell_method.split()
-			dim = tmp[0]
-			var_cell_method=tmp[1]
-			print var.cell_method
-			print dim
-			print var_cell_method
-			# switch to get other types of cell_method
-			# tmp=var.cell_method
-			# dim,var_cell_method=tmp.split()
-			if not dim=='time:':
-				raise Exception('Error, expecting cell method for time, got: '+dim)
+
+		# Get cell method
+		if 'cell_method' in var.ncattrs():
+				tmp = var.cell_method.split()
+				dim = tmp[0]
+				var_cell_method=tmp[1]
+				# Debug statement
+				#print var.cell_method
+				if not dim=='time:':
+					raise Exception('Error, expecting cell method for time, got: '+dim)
+			else: # no cell method
+				var_cell_method='inst'
+
 			# Get meaning period from time dimension
 			dims=var.dimensions
 			time_dim=nc_file.variables[dims[0]]

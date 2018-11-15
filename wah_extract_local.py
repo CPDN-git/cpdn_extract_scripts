@@ -37,7 +37,7 @@ if __name__ == "__main__":
 	fields_help+='\n      :       [region] = [lon_NW,lat_NW,lon_SW,lat_SW]'
 	fields_help+='\n      :        process = time post_processing: min|max|mean|sum|all'
 	fields_help+='\n      :        time_freq = input variable data frequency in hours (e.g. 24=daily, 720=monthly)'
-	fields_help+='\n      :        cell_method = input variable time cell method: minimum,maximum,mean'
+	fields_help+='\n      :        cell_method = input variable time cell method: minimum,maximum,mean,inst'
 	fields_help+='\n      :        vert_lev = (optional) input variable name of vertical level in netcdf file'
 	parser.add_argument('-f','--fields',required=True,help=fields_help)
 

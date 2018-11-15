@@ -64,7 +64,7 @@ where:
 -        [subregion]    = [lon_NW,lat_NW,lon_SE,lat_SE] or []
 -        process     = time post_processing: min|max|mean|sum|all
 -        time_freq   = input variable data frequency in hours (e.g. 24=daily, 720=monthly)
--        cell_method = input variable time cell method: minimum,maximum,mean
+-        cell_method = input variable time cell method: minimum,maximum,mean, inst (instantaneous output, no cell method)
 -        vert_lev    = input variable name of vertical level in netcdf file or ''
 
 ## Examples can be found in the examples folder:

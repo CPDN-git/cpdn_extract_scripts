@@ -3,7 +3,8 @@
 ###############################################################################
 # Program : wah_extract_local.py
 # Author  : Sihan Li, Peter Uhe, based on original scripts by Neil Massey
-# Date	  : 09/08/17
+# Date	  : 22/11/17
+# modified to get Windows only returns
 # Purpose : Script to specify the urls of w@h zip files, then download and extract 
 #           the data of requested fields into separate netCDF files
 ###############################################################################
@@ -15,6 +16,7 @@ import glob
 import fnmatch
 import argparse
 import traceback
+import csv
 
 from wah_extract_functions import extract_url,process_netcdf,read_urls,check_files_exist,get_filename
 
@@ -38,11 +40,12 @@ if __name__ == "__main__":
 	fields_help+='\n      :       [region] = [lon_NW,lat_NW,lon_SW,lat_SW]'
 	fields_help+='\n      :        process = time post_processing: min|max|mean|sum|all'
 	fields_help+='\n      :        time_freq = input variable data frequency in hours (e.g. 24=daily, 720=monthly)'
-	fields_help+='\n      :        cell_method = input variable time cell method: minimum,maximum,mean,inst'
+	fields_help+='\n      :        cell_method = input variable time cell method: minimum,maximum,mean'
 	fields_help+='\n      :        vert_lev = (optional) input variable name of vertical level in netcdf file'
 	parser.add_argument('-f','--fields',required=True,help=fields_help)
 	# add in argument for selecting one year
-        parser.add_argument('-y','--year',default=0,help='Year to extract: specifiy a particular year to extract, if need to extract all years, set to 0')
+        parser.add_argument('-b','--batch',type=int,help='please specify which batch')
+	parser.add_argument('-y','--year',default=0,help='Year to extract: specifiy a particular year to extract, if need to extract all years, set to 0')
 	parser.add_argument('-s','--start_zip',type=int,default=1,help='First zip to extract')
 	parser.add_argument('-e','--end_zip',type=int,default=12,help='Last zip to extract')
 	
@@ -51,6 +54,7 @@ if __name__ == "__main__":
 
 	# Get arguments
 	args = parser.parse_args()
+	batch=args.batch
 	fields=args.fields
 	output_dir=args.out_dir
 	urls_file=args.urls_file
@@ -72,15 +76,33 @@ if __name__ == "__main__":
 	
 	# Get list of urls of zips to extract
 	urls = read_urls(urls_file)
+        
+	csv_filename=("../batch_"+str(batch)+"_successful_wus_os.csv")
+        f=open(csv_filename)
+        umid_list=[]
+        for row in csv.reader(f):
+                try:
+                        umid=row[0]
+                        val=row[-1]
+                        if val=="Windows":
+                                print "Windows, extract"
+                                umid_list.append(umid)
+                        else:
+                                print "non Windows, pass"
+                except:
+                        print "Skipping lines"
+        f.close()	
 	# Strip away the zip name, leaving the path of the task
 	# taskurls= set(map(os.path.dirname,urls))
 	YearCode=int(year_to_extract)
         if YearCode == 0:
-		taskurls= set(map(os.path.dirname,urls))
+		urls_match=[x for x in urls if any(xs in x for xs in umid_list)]
+		taskurls= set(map(os.path.dirname,urls_match))
         else:
                 YearString='_'+ str(YearCode) + '12'
-		pathhh = [s for s in urls if YearString in s]	
-		taskurls= set(map(os.path.dirname,pathhh))
+		pathhh = [s for s in urls if YearString in s]
+		path_match=[x for x in pathhh if any(xs in x for xs in umid_list)]	
+		taskurls= set(map(os.path.dirname,path_match))
         print 'Year to extract:',YearCode
 	print 'fields',field_list
 	print 'Number of tasks:',len(taskurls)

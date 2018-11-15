@@ -40,12 +40,13 @@ Now you should be ready to go when you run the python scripts.
 
 wah_extract_local.py ONLY:
 - -i / --in_dir: input directory containing subfolders for each task (e.g. /gpfs/projects/cpdn/storage/boinc/upload/batch_440/successful/)
-
+Please Note: need to include the '/' as the end of the input directory name
 wah_extract_wget.py ONLY:
 - -u / --urls_file: File containing list of urls of zip files (in gzipped format)
 
 BOTH SCRIPTS:
 - -o / --out_dir: output directory for extracted data
+- -y / --year: Specify a certain year to extract, if need to extract all, set to 0
 - -s / --start_zip: First zip to extract
 - -e / --end_zip: Last zip to extract
 - -f / --fields: List of (comma separated) fields to extract
@@ -62,7 +63,7 @@ where:
 -        file_stream = ga.pd|ga.pe|ma.pc
 -        stash_code  = stash_section * 1000 + stash_item
 -        [subregion]    = [lon_NW,lat_NW,lon_SE,lat_SE] or []
--        process     = time post_processing: min|max|mean|sum|all
+-        process     = spatial post_processing: min|max|mean|sum|all
 -        time_freq   = input variable data frequency in hours (e.g. 24=daily, 720=monthly)
 -        cell_method = input variable time cell method: minimum,maximum,mean, inst (instantaneous output, no cell method)
 -        vert_lev    = input variable name of vertical level in netcdf file or ''

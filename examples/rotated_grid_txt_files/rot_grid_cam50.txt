@@ -1,0 +1,19 @@
+# Author: Sihan Li, 24/11/2017
+# wah2 cam50 grid
+#
+gridtype  = lonlat
+gridsize  = 19402
+xname     = longitude0
+xlongname = longitude in rotated pole grid
+xunits    = degrees
+yname     = latitude0
+ylongname = latitude in rotated pole grid
+yunits    = degrees
+xsize     = 178
+ysize     = 109
+xnpole    = 69.13
+ynpole    = 70.60
+xfirst    = 338.66
+xinc      = 0.44
+yfirst    = 25.08
+yinc      = -0.44

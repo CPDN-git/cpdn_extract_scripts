@@ -40,7 +40,8 @@ if __name__ == "__main__":
 	fields_help+='\n      :        cell_method = input variable time cell method: minimum,maximum,mean,inst'
 	fields_help+='\n      :        vert_lev = (optional) input variable name of vertical level in netcdf file'
 	parser.add_argument('-f','--fields',required=True,help=fields_help)
-
+	# add in argument for selecting one year
+	parser.add_argument('-y','--year',default=0,help='Year to extract: specifiy a particular year to extract, if need to extract all years, set to 0')
 	parser.add_argument('-s','--start_zip',type=int,default=1,help='First zip to extract')
 	parser.add_argument('-e','--end_zip',type=int,default=12,help='Last zip to extract')
 	parser.add_argument('--structure',default='std',help='Directory structure [std|startdate-dir]')
@@ -51,6 +52,7 @@ if __name__ == "__main__":
 	fields=args.fields
 	output_dir=args.out_dir
 	in_dir=args.in_dir
+	year_to_extract=args.year
 	start_zip=args.start_zip
 	end_zip=args.end_zip
 	
@@ -67,11 +69,17 @@ if __name__ == "__main__":
 			exit()
 	
 	# Get all workunit folders within batch folder
-	taskdirs= glob.glob(in_dir+'/*')
-
+	# Either specify a certain year to extract or extract all years
+	YearCode=int(year_to_extract)
+	if YearCode == 0:
+		taskdirs = glob.glob(in_dir+'*')
+	else:
+		YearString='_'+ str(YearCode) + '*'
+		pathhh= os.path.join(in_dir+'*'+YearString)
+		taskdirs= glob.glob(pathhh)
+	print 'Year to extract:',YearCode
 	print 'fields',field_list
 	print 'Number of tasks:',len(taskdirs)
-	
 	# create a temporary directory in home directory
 	# temp_dir = tempfile.mkdtemp(dir=os.environ['HOME'])
 	tmp_dir = os.path.join(output_dir+'/tmp')

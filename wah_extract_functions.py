@@ -439,10 +439,12 @@ def select_vars_stash(nc_file,stash_code,meaning_period,cell_method,vert_lev):
 		except:
 			# Not a stash item
 			continue
+
+		# Check for matching stash code
 		if int(stash_code)==var_stash_code:
 
-		# Get cell method
-		if 'cell_method' in var.ncattrs():
+			# Get cell method
+			if 'cell_method' in var.ncattrs():
 				tmp = var.cell_method.split()
 				dim = tmp[0]
 				var_cell_method=tmp[1]

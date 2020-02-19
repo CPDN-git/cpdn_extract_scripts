@@ -25,7 +25,9 @@ def main():
     iter_files=glob.iglob(os.path.join(args.dir,"*.nc"))
 
     for fname in iter_files:
+        print("Compressing file "+fname)
         compress_netcdf(fname)
+
 
     print('Finished!')
 

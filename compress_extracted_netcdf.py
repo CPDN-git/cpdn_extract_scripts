@@ -19,7 +19,9 @@ def main():
     #Read in the command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("dir", help="The directory containing the netCDF files you want to compress")
-    
+
+    args = parser.parse_args()
+        
     iter_files=glob.iglob(os.path.join(args.dir,"*.nc"))
 
     for fname in iter_files:

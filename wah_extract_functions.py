@@ -121,16 +121,17 @@ def get_output_field_name3(field):
 ###############################################################################
 
 def get_filename(taskpath, field,output_dir,zipstart,zipend,structure='std',zip_freq='month'):
-	stream_map={'ma':'atmos','ga':'region','ka':'atmos','ko':'ocean'}
 	# Different components used in file name and path
 	boinc=taskpath.split('/')[-1]
 	
 	# When splitting up the file name by underscore
 	# hadcm3 apps have one less component (e.g. compared to wah2_eu50)
-	if boinc[:6]=='hadcm3':
+	if boinc[:6] in ['hadcm3','hadam4']:
+		stream_map={'ma':'atmos','ga':'atmos','ka':'atmos','ko':'ocean'}
 		umid=boinc.split('_')[1]
 		datecode=boinc.split('_')[2]
 	else:
+		stream_map={'ma':'atmos','ga':'region','ka':'atmos','ko':'ocean'}
 		umid=boinc.split('_')[2]
 		datecode=boinc.split('_')[3]
 	# Get start year and month (old filenames don't contain start month so assume 12)
@@ -824,4 +825,10 @@ def read_urls(urls_file):
 	fh.close()
 	urls = map(string.strip, urls)
 	return urls
+
+#####################################################
+
+def compress_netcdf(fname):
+    os.system('nccopy -d 2 -s '+fname+' '+fname+'_compressed')
+    shutil.move(fname+'_compressed',fname)
 	

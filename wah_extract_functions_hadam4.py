@@ -824,4 +824,10 @@ def read_urls(urls_file):
 	fh.close()
 	urls = map(string.strip, urls)
 	return urls
+
+#####################################################
+
+def compress_netcdf(fname):
+    os.system('nccopy -d 2 -s '+fname+' '+fname+'_compressed')
+    shutil.move(fname+'_compressed',fname)
 	

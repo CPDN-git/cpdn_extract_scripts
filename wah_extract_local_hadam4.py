@@ -139,6 +139,9 @@ if __name__ == "__main__":
 			for nc_list in all_netcdfs.itervalues():
 				for fname in nc_list:
 					os.remove(fname)
+
+            # Compress the output netcdf file
+            compress_netcdf(out_file)
 	except Exception,e:
 		print 'Error extracting netcdf files',e
 		traceback.print_exc()
